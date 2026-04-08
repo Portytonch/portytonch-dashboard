@@ -28,6 +28,45 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
 
+    .auth-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding: 14px 16px;
+      border: 1px solid #dbe2ea;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .auth-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 240px;
+    }
+
+    .auth-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #0f172a;
+    }
+
+    .auth-status {
+      font-size: 14px;
+      color: #475569;
+    }
+
+    .auth-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .sticky-filters {
       position: sticky;
       top: 0;
@@ -661,6 +700,18 @@
   <h1>Dashboard Operativo P1P2, SP3, Tonchalá</h1>
   <div class="sub">Promedios, sumas y porcentajes por operador y por mes según rangos de turbidez</div>
 
+
+  <div class="auth-panel">
+    <div class="auth-info">
+      <div class="auth-title">Control de sesión</div>
+      <div id="sessionStatus" class="auth-status">Verificando sesión...</div>
+    </div>
+    <div class="auth-actions">
+      <button id="loginBtn" type="button">Login</button>
+      <button id="logoutBtn" type="button" style="display:none;">Logout</button>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="sticky-filters">
       <div class="toolbar-grid">
@@ -994,6 +1045,9 @@
     ];
 
     const fileInput = document.getElementById("fileInput");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const sessionStatusEl = document.getElementById("sessionStatus");
     const statusEl = document.getElementById("status");
     const tablaEl = document.getElementById("tabla");
     const tablaMesesEl = document.getElementById("tablaMeses");
@@ -1028,6 +1082,33 @@
       statusEl.textContent = msg;
       statusEl.className = ok ? "msg ok" : "msg";
     }
+
+    function setSessionStatus(message, ok = false) {
+      if (!sessionStatusEl) return;
+      sessionStatusEl.textContent = message;
+      sessionStatusEl.style.color = ok ? "#166534" : "#475569";
+    }
+
+    function updateAuthUI(user) {
+      if (user) {
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+        const userLabel = user.email || (user.user_metadata && user.user_metadata.full_name) || "usuario autenticado";
+        setSessionStatus(`Sesión activa: ${userLabel}`, true);
+      } else {
+        loginBtn.style.display = "inline-block";
+        logoutBtn.style.display = "none";
+        setSessionStatus("Sesión no iniciada");
+      }
+    }
+
+    function clearRenderedData() {
+      tablaEl.innerHTML = "";
+      tablaMesesEl.innerHTML = "";
+      tablaResumenEl.innerHTML = "";
+      clearAllCharts();
+    }
+
 
     function toNumber(value) {
       if (value === null || value === undefined || value === "") return NaN;
@@ -3609,11 +3690,20 @@
     async function cargarJsonAutomatico() {
       try {
         setStatus("Cargando datos protegidos...");
+        setSessionStatus("Validando sesión...");
+
+        if (!window.netlifyIdentity) {
+          throw new Error("Netlify Identity no está disponible en esta página.");
+        }
 
         const user = netlifyIdentity.currentUser();
 
+        updateAuthUI(user);
+
         if (!user) {
+          clearRenderedData();
           setStatus("Debes iniciar sesión para ver el dashboard.");
+          setSessionStatus("Sesión no iniciada");
           return;
         }
 
@@ -3635,23 +3725,60 @@
         rawData = data;
         fillSelectors(rawData);
         procesarDatos(rawData);
+        setSessionStatus(`Sesión activa: ${user.email || "usuario autenticado"}`, true);
       } catch (error) {
-        tablaEl.innerHTML = "";
-        tablaMesesEl.innerHTML = "";
-        tablaResumenEl.innerHTML = "";
-        clearAllCharts();
+        rawData = [];
+        clearRenderedData();
         setStatus(
-          "No fue posible cargar los datos protegidos.
-" +
-          "Verifica que hayas iniciado sesión y que la función /.netlify/functions/dashboard-data esté desplegada.
-" +
+          "No fue posible cargar los datos protegidos.\n" +
+          "Verifica que hayas iniciado sesión y que la función /.netlify/functions/dashboard-data esté desplegada.\n" +
           "También puedes cargar el JSON manualmente con el selector."
         );
         console.error(error);
       }
     }
 
-    netlifyIdentity.init();
+    if (window.netlifyIdentity) {
+      loginBtn.addEventListener("click", () => {
+        netlifyIdentity.open();
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await netlifyIdentity.logout();
+        } catch (error) {
+          console.error(error);
+        }
+      });
+
+      netlifyIdentity.on("init", user => {
+        updateAuthUI(user);
+        if (user) {
+          cargarJsonAutomatico();
+        } else {
+          clearRenderedData();
+          setStatus("Debes iniciar sesión para ver el dashboard.");
+        }
+      });
+
+      netlifyIdentity.on("login", user => {
+        updateAuthUI(user);
+        netlifyIdentity.close();
+        cargarJsonAutomatico();
+      });
+
+      netlifyIdentity.on("logout", () => {
+        rawData = [];
+        updateAuthUI(null);
+        clearRenderedData();
+        setStatus("Sesión cerrada. Inicia sesión para volver a cargar el dashboard.");
+      });
+
+      netlifyIdentity.init();
+    } else {
+      setSessionStatus("Netlify Identity no está disponible");
+      setStatus("No se pudo inicializar Netlify Identity.");
+    }
 
     fileInput.addEventListener("change", e => {
       const file = e.target.files[0];
@@ -3758,7 +3885,6 @@
 
     fillIntervalSelector();
     updateButtons();
-    cargarJsonAutomatico();
   </script>
 </body>
 </html>
