@@ -666,24 +666,10 @@
 </div>
 
 <script>
-if (window.netlifyIdentity) {
-  netlifyIdentity.on("init", user => {
-    document.getElementById("userStatus").innerText = user ? user.email : "No logueado";
-  });
-
-  netlifyIdentity.on("login", user => {
-  netlifyIdentity.close();
-  location.reload();
-});
-    document.getElementById("userStatus").innerText = user.email;
-    netlifyIdentity.close();
-    location.reload();
-  });
-
-  netlifyIdentity.on("logout", () => {
-    document.getElementById("userStatus").innerText = "No logueado";
-    location.reload();
-  });
+function updateUserStatus(user) {
+  const userStatusEl = document.getElementById("userStatus");
+  if (!userStatusEl) return;
+  userStatusEl.innerText = user ? (user.email || "Logueado") : "No logueado";
 }
 </script>
 
@@ -3681,9 +3667,34 @@ if (window.netlifyIdentity) {
     }
 
     if (window.netlifyIdentity) {
-  netlifyIdentity.on("init", user => {
-    if (user) {
-      cargarJsonAutomatico();
+      netlifyIdentity.on("init", user => {
+        updateUserStatus(user);
+        if (user) {
+          cargarJsonAutomatico();
+        } else {
+          setStatus("Debes iniciar sesión para ver el dashboard.");
+        }
+      });
+
+      netlifyIdentity.on("login", user => {
+        updateUserStatus(user);
+        netlifyIdentity.close();
+        cargarJsonAutomatico();
+      });
+
+      netlifyIdentity.on("logout", () => {
+        updateUserStatus(null);
+        rawData = [];
+        tablaEl.innerHTML = "";
+        tablaMesesEl.innerHTML = "";
+        tablaResumenEl.innerHTML = "";
+        clearAllCharts();
+        setStatus("Debes iniciar sesión para ver el dashboard.");
+      });
+
+      netlifyIdentity.init();
+    }
+
     }
   });
 
