@@ -3656,10 +3656,8 @@ function updateUserStatus(user) {
         tablaResumenEl.innerHTML = "";
         clearAllCharts();
         setStatus(
-          "No fue posible cargar los datos protegidos.
-" +
-          "Verifica que hayas iniciado sesión y que la función /.netlify/functions/dashboard-data esté desplegada.
-" +
+          "No fue posible cargar los datos protegidos.\n" +
+          "Verifica que hayas iniciado sesión y que la función /.netlify/functions/dashboard-data esté desplegada.\n" +
           "También puedes cargar el JSON manualmente con el selector."
         );
         console.error(error);
