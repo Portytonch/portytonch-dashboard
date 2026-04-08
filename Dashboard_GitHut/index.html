@@ -3664,48 +3664,36 @@ function updateUserStatus(user) {
       }
     }
 
-    if (window.netlifyIdentity) {
-      netlifyIdentity.on("init", user => {
-        updateUserStatus(user);
-        if (user) {
-          cargarJsonAutomatico();
-        } else {
-          setStatus("Debes iniciar sesión para ver el dashboard.");
-        }
-      });
-
-      netlifyIdentity.on("login", user => {
-        updateUserStatus(user);
-        netlifyIdentity.close();
-        cargarJsonAutomatico();
-      });
-
-      netlifyIdentity.on("logout", () => {
-        updateUserStatus(null);
-        rawData = [];
-        tablaEl.innerHTML = "";
-        tablaMesesEl.innerHTML = "";
-        tablaResumenEl.innerHTML = "";
-        clearAllCharts();
-        setStatus("Debes iniciar sesión para ver el dashboard.");
-      });
-
-      netlifyIdentity.init();
-    }
-
+if (window.netlifyIdentity) {
+  netlifyIdentity.on("init", user => {
+    updateUserStatus(user);
+    if (user) {
+      cargarJsonAutomatico();
+    } else {
+      setStatus("Debes iniciar sesión para ver el dashboard.");
     }
   });
 
   netlifyIdentity.on("login", user => {
+    updateUserStatus(user);
     netlifyIdentity.close();
     cargarJsonAutomatico();
   });
 
   netlifyIdentity.on("logout", () => {
-    location.reload();
+    updateUserStatus(null);
+    rawData = [];
+    tablaEl.innerHTML = "";
+    tablaMesesEl.innerHTML = "";
+    tablaResumenEl.innerHTML = "";
+    clearAllCharts();
+    setStatus("Debes iniciar sesión para ver el dashboard.");
   });
 
   netlifyIdentity.init();
+} else {
+  setStatus("No fue posible cargar Netlify Identity.");
+}
 
     fileInput.addEventListener("change", e => {
       const file = e.target.files[0];
@@ -3812,7 +3800,6 @@ function updateUserStatus(user) {
 
     fillIntervalSelector();
     updateButtons();
-    cargarJsonAutomatico();
   </script>
 </body>
 </html>
