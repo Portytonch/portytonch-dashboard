@@ -705,10 +705,10 @@
     </div>
 
     <div id="metricTitle" class="metric-title">Promedio de Dosis P1 y P2</div>
-    <div id="status" class="msg">Intentando cargar automáticamente dashboard_data.json...</div>
+    <div id="status" class="msg">Cargando datos protegidos...</div>
 
     <div class="hint-box">
-      Si la carga automática falla, todavía puedes cargar el JSON manualmente con el selector de archivo.
+      Si la carga protegida falla, todavía puedes cargar el JSON manualmente con el selector de archivo.
     </div>
 
     <div class="section-title">Tabla por operador</div>
@@ -869,6 +869,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.5/build/index.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
   <script>
     let rawData = [];
@@ -3607,18 +3608,31 @@
 
     async function cargarJsonAutomatico() {
       try {
-        setStatus(`Intentando cargar automáticamente ${AUTO_JSON_FILE}...`);
+        setStatus("Cargando datos protegidos...");
 
-        const response = await fetch(AUTO_JSON_FILE, { cache: "no-store" });
+        const user = netlifyIdentity.currentUser();
+
+        if (!user) {
+          setStatus("Debes iniciar sesión para ver el dashboard.");
+          return;
+        }
+
+        const token = await user.jwt();
+
+        const response = await fetch("/.netlify/functions/dashboard-data", {
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
 
         if (!response.ok) {
-          throw new Error(`No se pudo cargar ${AUTO_JSON_FILE} (HTTP ${response.status})`);
+          throw new Error(`No se pudieron cargar los datos protegidos (HTTP ${response.status})`);
         }
 
         const data = await response.json();
 
         rawData = data;
-
         fillSelectors(rawData);
         procesarDatos(rawData);
       } catch (error) {
@@ -3627,12 +3641,17 @@
         tablaResumenEl.innerHTML = "";
         clearAllCharts();
         setStatus(
-          `No fue posible cargar automáticamente ${AUTO_JSON_FILE}.\n` +
-          `Verifica que el archivo esté en la misma carpeta del HTML y que estés abriendo la página desde un servidor local.\n` +
-          `También puedes cargarlo manualmente con el selector.`
+          "No fue posible cargar los datos protegidos.
+" +
+          "Verifica que hayas iniciado sesión y que la función /.netlify/functions/dashboard-data esté desplegada.
+" +
+          "También puedes cargar el JSON manualmente con el selector."
         );
+        console.error(error);
       }
     }
+
+    netlifyIdentity.init();
 
     fileInput.addEventListener("change", e => {
       const file = e.target.files[0];
