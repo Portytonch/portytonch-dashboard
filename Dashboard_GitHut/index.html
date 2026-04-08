@@ -672,6 +672,9 @@ if (window.netlifyIdentity) {
   });
 
   netlifyIdentity.on("login", user => {
+  netlifyIdentity.close();
+  location.reload();
+});
     document.getElementById("userStatus").innerText = user.email;
     netlifyIdentity.close();
     location.reload();
@@ -3677,7 +3680,23 @@ if (window.netlifyIdentity) {
       }
     }
 
-    netlifyIdentity.init();
+    if (window.netlifyIdentity) {
+  netlifyIdentity.on("init", user => {
+    if (user) {
+      cargarJsonAutomatico();
+    }
+  });
+
+  netlifyIdentity.on("login", user => {
+    netlifyIdentity.close();
+    cargarJsonAutomatico();
+  });
+
+  netlifyIdentity.on("logout", () => {
+    location.reload();
+  });
+
+  netlifyIdentity.init();
 
     fileInput.addEventListener("change", e => {
       const file = e.target.files[0];
