@@ -665,14 +665,6 @@
   <div id="userStatus">No logueado</div>
 </div>
 
-<script>
-function updateUserStatus(user) {
-  const userStatusEl = document.getElementById("userStatus");
-  if (!userStatusEl) return;
-  userStatusEl.innerText = user ? (user.email || "Logueado") : "No logueado";
-}
-</script>
-
   <h1>Dashboard Operativo P1P2, SP3, Tonchalá</h1>
   <div class="sub">Promedios, sumas y porcentajes por operador y por mes según rangos de turbidez</div>
 
@@ -3664,36 +3656,57 @@ function updateUserStatus(user) {
       }
     }
 
-if (window.netlifyIdentity) {
-  netlifyIdentity.on("init", user => {
-    updateUserStatus(user);
-    if (user) {
-      cargarJsonAutomatico();
-    } else {
-      setStatus("Debes iniciar sesión para ver el dashboard.");
+function updateUserStatus(user) {
+      const userStatusEl = document.getElementById("userStatus");
+      if (!userStatusEl) return;
+      userStatusEl.innerText = user ? (user.email || "Logueado") : "No logueado";
+      console.log("ESTADO USER:", user);
     }
-  });
 
-  netlifyIdentity.on("login", user => {
-    updateUserStatus(user);
-    netlifyIdentity.close();
-    cargarJsonAutomatico();
-  });
+    if (window.netlifyIdentity) {
+      netlifyIdentity.on("init", user => {
+        console.log("EVENTO init:", user);
+        updateUserStatus(user);
 
-  netlifyIdentity.on("logout", () => {
-    updateUserStatus(null);
-    rawData = [];
-    tablaEl.innerHTML = "";
-    tablaMesesEl.innerHTML = "";
-    tablaResumenEl.innerHTML = "";
-    clearAllCharts();
-    setStatus("Debes iniciar sesión para ver el dashboard.");
-  });
+        if (user) {
+          cargarJsonAutomatico();
+        } else {
+          setStatus("Debes iniciar sesión para ver el dashboard.");
+        }
+      });
 
-  netlifyIdentity.init();
-} else {
-  setStatus("No fue posible cargar Netlify Identity.");
-}
+      netlifyIdentity.on("login", user => {
+        console.log("EVENTO login:", user);
+        updateUserStatus(user);
+        netlifyIdentity.close();
+
+        setTimeout(() => {
+          const current = netlifyIdentity.currentUser();
+          console.log("CURRENT USER DESPUES LOGIN:", current);
+
+          if (current) {
+            cargarJsonAutomatico();
+          } else {
+            setStatus("El login ocurrió, pero no quedó sesión activa.");
+          }
+        }, 1500);
+      });
+
+      netlifyIdentity.on("logout", () => {
+        console.log("EVENTO logout");
+        updateUserStatus(null);
+        rawData = [];
+        tablaEl.innerHTML = "";
+        tablaMesesEl.innerHTML = "";
+        tablaResumenEl.innerHTML = "";
+        clearAllCharts();
+        setStatus("Debes iniciar sesión para ver el dashboard.");
+      });
+
+      netlifyIdentity.init();
+    } else {
+      setStatus("No fue posible cargar Netlify Identity.");
+    }
 
     fileInput.addEventListener("change", e => {
       const file = e.target.files[0];
