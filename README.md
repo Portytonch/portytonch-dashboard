@@ -1,2 +1,2 @@
 # portytonch-dashboard
-Primer Dashboard de Pórtico y Tonchalá 
+Publicar dashboard en GitHub Pages 
