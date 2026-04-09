@@ -1,1 +1,3745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Operativo P1P2, SP3, Tonchalá</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      background: #f5f7fa;
+      color: #1f2937;
+    }
 
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .sub {
+      margin-bottom: 16px;
+      color: #4b5563;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .sticky-filters {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: white;
+      padding: 12px 0 10px 0;
+      border-bottom: 1px solid #dbe2ea;
+      margin-bottom: 12px;
+    }
+
+    .toolbar-grid {
+      display: grid;
+      grid-template-columns:
+        max-content
+        max-content
+        max-content
+        max-content
+        max-content
+        max-content
+        max-content
+        max-content
+        1fr
+        max-content;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .toolbar-grid .file-input {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    #btnDosis { grid-column: 2; grid-row: 1; }
+    #btnClarificadas { grid-column: 3; grid-row: 1; }
+    #btnFinales { grid-column: 4; grid-row: 1; }
+    #btnCaudal { grid-column: 5; grid-row: 1; }
+    #btnHoras { grid-column: 6; grid-row: 1; }
+    #btnPorcentaje { grid-column: 7; grid-row: 1; }
+    #btnM3 { grid-column: 8; grid-row: 1; }
+    #btnCalifFinal { grid-column: 10; grid-row: 1; }
+
+    .date-filters {
+      grid-column: 1 / span 3;
+      grid-row: 2;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-self: start;
+      flex-wrap: wrap;
+    }
+
+    .month-group,
+    .day-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-self: auto;
+      margin-left: 0;
+    }
+
+    .interval-center {
+      grid-column: 4 / span 4;
+      grid-row: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      justify-self: stretch;
+    }
+
+    #btnP1P2 {
+      grid-column: 8;
+      grid-row: 2;
+      justify-self: end;
+    }
+
+    #btnSP3 {
+      grid-column: 9;
+      grid-row: 2;
+      justify-self: end;
+    }
+
+    #btnTonchala {
+      grid-column: 10;
+      grid-row: 2;
+      justify-self: end;
+    }
+
+    input[type="file"], button, select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    #btnP1P2, #btnSP3, #btnTonchala {
+      min-width: 110px;
+      font-weight: bold;
+    }
+
+    #btnP1P2.active {
+      background: #0f766e;
+      color: white;
+      border-color: #0f766e;
+    }
+
+    #btnSP3.active {
+      background: #7c3aed;
+      color: white;
+      border-color: #7c3aed;
+    }
+
+    #btnTonchala.active {
+      background: #b45309;
+      color: white;
+      border-color: #b45309;
+    }
+
+    .metric-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 12px 0;
+      color: #111827;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 24px 0 10px;
+      color: #0f172a;
+    }
+
+    .subsection-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 18px 0 8px;
+      color: #0f172a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #d1d5db;
+      padding: 8px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #e5eef9;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    td:first-child {
+      text-align: left;
+      font-weight: bold;
+      background: #f8fafc;
+      position: sticky;
+      left: 0;
+      z-index: 5;
+    }
+
+    th:first-child {
+      text-align: left;
+      font-weight: bold;
+      background: #e5eef9;
+      position: sticky;
+      left: 0;
+      top: 0;
+      z-index: 15;
+    }
+
+    th.turb-col {
+      background: #dbeafe;
+      font-weight: bold;
+      z-index: 11;
+    }
+
+    td.turb-col {
+      background: #eef6ff;
+      font-weight: bold;
+      position: sticky;
+      left: auto;
+    }
+
+    th.turb-col:first-child {
+      z-index: 16;
+    }
+
+    .ntu-box {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: #dbeafe;
+      color: #1e3a8a;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .msg {
+      margin: 12px 0;
+      color: #b91c1c;
+      font-weight: bold;
+      white-space: pre-line;
+    }
+
+    .ok {
+      color: #166534;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .summary-row td {
+      font-weight: bold;
+      background: #eef2ff;
+    }
+
+    .hint-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 70vh;
+      margin-bottom: 12px;
+      border: 1px solid #dbe2ea;
+      border-radius: 10px;
+      background: white;
+    }
+
+    .table-note {
+      font-size: 13px;
+      color: #475569;
+      margin: 6px 0 12px;
+    }
+
+    .summary-row-layout {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .summary-plant-wrap {
+      width: 33.33%;
+      min-width: 420px;
+      max-width: 560px;
+      overflow: auto;
+      margin-bottom: 12px;
+      border: 1px solid #dbe2ea;
+      border-radius: 10px;
+      background: white;
+    }
+
+    .summary-plant-wrap table th,
+    .summary-plant-wrap table td {
+      padding: 10px 8px;
+    }
+
+    .summary-chart-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 600px;
+      width: 75%;
+      margin: 0 auto;
+      min-height: 270px;
+      border: 1px solid #dbe2ea;
+      border-radius: 10px;
+      background: white;
+      padding: 12px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .summary-chart-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #0f172a;
+    }
+
+    .summary-chart-canvas {
+      width: 100% !important;
+      height: 204px !important;
+      display: block;
+    }
+
+    .summary-chart-note {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .daily-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    .daily-chart-card {
+      position: relative;
+      min-width: 0;
+      min-height: 340px;
+      border: 1px solid #dbe2ea;
+      border-radius: 12px;
+      background: white;
+      padding: 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .daily-chart-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .daily-chart-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .daily-chart-canvas {
+      width: 100% !important;
+      height: 260px !important;
+      display: block;
+    }
+
+    .analysis-charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    .analysis-chart-card {
+      position: relative;
+      min-width: 0;
+      min-height: 360px;
+      border: 1px solid #dbe2ea;
+      border-radius: 12px;
+      background: white;
+      padding: 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .analysis-chart-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .analysis-chart-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 10px;
+      line-height: 1.4;
+      min-height: 34px;
+    }
+
+    .analysis-chart-canvas {
+      width: 100% !important;
+      height: 270px !important;
+      display: block;
+    }
+
+    .comparison-charts-row {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      gap: 16px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .comparison-chart-card {
+      position: relative;
+      flex: 0 1 540px;
+      width: min(540px, 100%);
+      min-width: 320px;
+      min-height: 390px;
+      border: 1px solid #dbe2ea;
+      border-radius: 12px;
+      background: white;
+      padding: 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .comparison-chart-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .comparison-chart-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 10px;
+      line-height: 1.4;
+      min-height: 34px;
+    }
+
+    .comparison-chart-canvas {
+      width: 100% !important;
+      height: 290px !important;
+      display: block;
+    }
+
+
+    .interval-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-self: auto;
+      margin-left: 0;
+    }
+
+    .operator-daily-chart-card {
+      position: relative;
+      width: 100%;
+      min-height: 460px;
+      border: 1px solid #dbe2ea;
+      border-radius: 12px;
+      background: white;
+      padding: 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .operator-daily-chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .operator-daily-chart-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .operator-daily-chart-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.45;
+      max-width: 820px;
+    }
+
+    .operator-daily-chart-canvas-wrap {
+      position: relative;
+      width: 100%;
+      min-height: 360px;
+      height: 360px;
+    }
+
+    .operator-daily-chart-canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+
+    .objective-band {
+      display: none;
+      justify-content: flex-end;
+      align-items: center;
+      width: 100%;
+      margin: 4px 0 10px;
+    }
+
+    .objective-band.visible {
+      display: flex;
+    }
+
+    .objective-band-inner {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      width: min(460px, 100%);
+    }
+
+    .objective-band-line {
+      flex: 1;
+      height: 0;
+      border-top: 3px solid #2563eb;
+      border-radius: 999px;
+    }
+
+    .objective-band-value {
+      font-size: 13px;
+      font-weight: bold;
+      color: #1e3a8a;
+      white-space: nowrap;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 6px 12px;
+    }
+
+    @media (max-width: 1200px) {
+      .toolbar-grid {
+        grid-template-columns: repeat(4, max-content);
+        justify-content: start;
+      }
+
+      .toolbar-grid .file-input,
+      #btnDosis,
+      #btnClarificadas,
+      #btnFinales,
+      #btnCaudal,
+      #btnHoras,
+      #btnPorcentaje,
+      #btnM3,
+      #btnCalifFinal,
+      .month-group,
+      .day-group,
+      .interval-group,
+      .interval-center,
+      #btnP1P2,
+      #btnSP3,
+      #btnTonchala {
+        grid-column: auto;
+        grid-row: auto;
+        margin-left: 0;
+      }
+
+      .summary-row-layout {
+        flex-direction: column;
+      }
+
+      .summary-plant-wrap {
+        width: 100%;
+        min-width: auto;
+        max-width: none;
+      }
+
+      .summary-chart-wrap {
+        min-width: auto;
+        width: 100%;
+        max-width: none;
+        min-height: 400px;
+      }
+
+      .analysis-charts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .daily-charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .daily-chart-card {
+        min-height: 320px;
+      }
+
+      .daily-chart-canvas {
+        height: 240px !important;
+      }
+
+      .comparison-charts-row {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .comparison-chart-card {
+        width: 100%;
+        max-width: 720px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .analysis-charts-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .analysis-chart-card {
+        min-height: 340px;
+      }
+
+      .analysis-chart-canvas {
+        height: 250px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Dashboard Operativo P1P2, SP3, Tonchalá</h1>
+  <div class="sub">Promedios, sumas y porcentajes por operador y por mes según rangos de turbidez</div>
+
+  <div class="panel">
+    <div class="sticky-filters">
+      <div class="toolbar-grid">
+        <input class="file-input" type="file" id="fileInput" accept=".json" />
+
+        <button id="btnDosis" class="active">Dosis</button>
+        <button id="btnClarificadas">Clarificadas</button>
+        <button id="btnFinales">Finales</button>
+        <button id="btnCaudal">Volumen M3</button>
+        <button id="btnHoras">Horas</button>
+        <button id="btnPorcentaje">Porcentaje</button>
+        <button id="btnM3">$/m3</button>
+        <button id="btnCalifFinal">Calificación Final</button>
+
+        <div class="date-filters">
+          <div class="month-group">
+            <label for="monthSelect">Mes:</label>
+            <select id="monthSelect">
+              <option value="">Todos</option>
+            </select>
+          </div>
+
+          <div class="day-group">
+            <label for="daySelect">Día:</label>
+            <select id="daySelect">
+              <option value="">Todos</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="interval-center">
+          <label for="intervalSelect">Intervalo:</label>
+          <select id="intervalSelect">
+            <option value="all">Todos</option>
+          </select>
+        </div>
+
+        <button id="btnP1P2" class="active" type="button">P1 y P2</button>
+        <button id="btnSP3" type="button">SP3</button>
+        <button id="btnTonchala" type="button">TONCHALÁ</button>
+      </div>
+    </div>
+
+    <div id="metricTitle" class="metric-title">Promedio de Dosis P1 y P2</div>
+    <div id="status" class="msg">Intentando cargar automáticamente dashboard_data.json...</div>
+
+    <div class="hint-box">
+      Si la carga automática falla, todavía puedes cargar el JSON manualmente con el selector de archivo.
+    </div>
+
+    <div class="section-title">Tabla por operador</div>
+    <div id="objectiveBand" class="objective-band">
+      <div class="objective-band-inner">
+        <div class="objective-band-line"></div>
+        <div id="objectiveValue" class="objective-band-value"></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="tabla"></table>
+    </div>
+
+    <div class="section-title">Tabla por mes</div>
+    <div class="table-note">Esta tabla usa los mismos botones, pero no se ve afectada por los filtros de Mes y Día.</div>
+    <div class="table-wrap">
+      <table id="tablaMeses"></table>
+    </div>
+
+    <div class="section-title">Resumen por planta</div>
+    <div class="table-note">Esta tabla y el gráfico sí responden a los filtros de Mes y Día y toman los valores consolidados por planta.</div>
+
+    <div class="summary-row-layout">
+      <div class="summary-plant-wrap">
+        <table id="tablaResumen"></table>
+      </div>
+
+      <div class="summary-chart-wrap">
+        <div class="summary-chart-title">Curvas de $/m3 por rango de turbidez</div>
+        <canvas id="resumenChart" class="summary-chart-canvas"></canvas>
+        <div class="summary-chart-note">
+          El gráfico solo responde a los filtros de Mes y Día.
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Turbiedad promedio diaria por mes</div>
+    <div class="daily-charts-grid">
+      <div class="daily-chart-card">
+        <div class="daily-chart-title" id="dailyTitleP1P2">P1 y P2 - Turbiedad promedio diaria</div>
+        <div class="daily-chart-subtitle" id="dailySubtitleP1P2">Seleccione un mes para visualizar los días del mes.</div>
+        <canvas id="dailyChartP1P2" class="daily-chart-canvas"></canvas>
+      </div>
+
+      <div class="daily-chart-card">
+        <div class="daily-chart-title" id="dailyTitleTonchala">Tonchalá - Turbiedad promedio diaria</div>
+        <div class="daily-chart-subtitle" id="dailySubtitleTonchala">Seleccione un mes para visualizar los días del mes.</div>
+        <canvas id="dailyChartTonchala" class="daily-chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="section-title">Análisis estadístico complementario</div>
+    <div class="table-note">
+      Estos gráficos son fijos, independientes de los botones de métricas y planta, y solo responden a los filtros de Mes y Día.
+    </div>
+
+    <div class="subsection-title">Franja de boxplots</div>
+    <div class="table-note">
+      Registros crudos filtrados por Mes y Día. Cada gráfico contiene tres cajas internas en el orden: P1 y P2, SP3 y Tonchalá.
+    </div>
+    <div class="analysis-charts-grid">
+      <div class="analysis-chart-card">
+        <div class="analysis-chart-title">Boxplot de turbiedad</div>
+        <div class="analysis-chart-subtitle">
+          Variables: Turbidez_Planta, Turb_P3 y Turb_Ing_Tonch.
+        </div>
+        <canvas id="boxplotTurbiedadChart" class="analysis-chart-canvas"></canvas>
+      </div>
+
+      <div class="analysis-chart-card">
+        <div class="analysis-chart-title">Boxplot de $/m3</div>
+        <div class="analysis-chart-subtitle">
+          Variables: $/m3_P1P2, $/m3_SP3 y $/m3_Tonch.
+        </div>
+        <canvas id="boxplotM3Chart" class="analysis-chart-canvas"></canvas>
+      </div>
+
+      <div class="analysis-chart-card">
+        <div class="analysis-chart-title">Boxplot de Costos Qcos</div>
+        <div class="analysis-chart-subtitle">
+          Variables: Costo_P1P2, Costo_P3 y Costo_Tonchalá.
+        </div>
+        <canvas id="boxplotCostosQcosChart" class="analysis-chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="subsection-title">Franja de gráficos de torta</div>
+    <div class="table-note">
+      Porcentajes calculados desde el conteo de registros de turbiedad por rangos cerrados, usando los datos filtrados por Mes y Día.
+    </div>
+    <div class="analysis-charts-grid">
+      <div class="analysis-chart-card">
+        <div class="analysis-chart-title">Distribución porcentual de turbiedad P1 y P2</div>
+        <div class="analysis-chart-subtitle">
+          Porcentajes calculados desde el conteo de registros de Turbidez_Planta por rangos cerrados.
+        </div>
+        <canvas id="pieTurbiedadP1P2Chart" class="analysis-chart-canvas"></canvas>
+      </div>
+
+      <div class="analysis-chart-card">
+        <div class="analysis-chart-title">Distribución porcentual de turbiedad SP3</div>
+        <div class="analysis-chart-subtitle">
+          Porcentajes calculados desde el conteo de registros de Turb_P3 por rangos cerrados.
+        </div>
+        <canvas id="pieTurbiedadSP3Chart" class="analysis-chart-canvas"></canvas>
+      </div>
+
+      <div class="analysis-chart-card">
+        <div class="analysis-chart-title">Distribución porcentual de turbiedad Tonchalá</div>
+        <div class="analysis-chart-subtitle">
+          Porcentajes calculados desde el conteo de registros de Turb_Ing_Tonch por rangos cerrados.
+        </div>
+        <canvas id="pieTurbiedadTonchalaChart" class="analysis-chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="subsection-title">Franja comparativa de composición porcentual</div>
+    <div class="table-note">
+      Estos dos gráficos responden a los filtros de Mes y Día. Cada barra representa el 100% de la planta seleccionada y muestra la composición interna de Pórtico frente a Tonchalá.
+    </div>
+    <div class="comparison-charts-row">
+      <div class="comparison-chart-card">
+        <div class="comparison-chart-title">Comparación de Volúmenes: Pórtico vs Tonchalá y Composición Interna de Pórtico</div>
+        <div class="comparison-chart-subtitle">
+          Pórtico se desglosa en P1, P2 y P3 usando Q_Tratada_P1, Q_Tratada_P2 y Vol_P3. Tonchalá se muestra como barra simple usando Q_Trat_Tonch.
+        </div>
+        <canvas id="comparisonVolumenChart" class="comparison-chart-canvas"></canvas>
+      </div>
+
+      <div class="comparison-chart-card">
+        <div class="comparison-chart-title">Comparación de Costos: Pórtico vs Tonchalá y Composición Interna de Pórtico</div>
+        <div class="comparison-chart-subtitle">
+          Pórtico se desglosa en Costo_P1, Costo_P2 y Costo_P3. Tonchalá se muestra como barra simple usando Costo_Tonchalá.
+        </div>
+        <canvas id="comparisonCostoChart" class="comparison-chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="section-title">Resultados por operador</div>
+    <div class="table-note">
+      Este gráfico responde a la métrica activa, la planta activa y al selector de Mes.
+      Si en Mes se elige un mes específico, se muestra por días. Si en Mes se elige Todos, se muestra agrupado por meses del año.
+      Ignora por completo el filtro de Día. Los operadores sin dato se representan en cero y, si existen más de 7 operadores, el resto se agrupa como Otros.
+    </div>
+    <div class="operator-daily-chart-card">
+      <div class="operator-daily-chart-header">
+        <div>
+          <div class="operator-daily-chart-title" id="operatorDailyChartTitle">Resultados diarios</div>
+          <div class="operator-daily-chart-subtitle" id="operatorDailyChartSubtitle">Seleccione un mes.</div>
+        </div>
+      </div>
+      <div class="operator-daily-chart-canvas-wrap">
+        <canvas id="operatorDailyChart" class="operator-daily-chart-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.5/build/index.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+  <script>
+    let rawData = [];
+    let currentMode = "dosis";
+    let currentPlant = "p1p2";
+    let resumenChartInstance = null;
+    let dailyP1P2ChartInstance = null;
+    let dailyTonchalaChartInstance = null;
+    let boxplotTurbiedadChartInstance = null;
+    let boxplotCostosQcosChartInstance = null;
+    let boxplotM3ChartInstance = null;
+    let pieTurbiedadP1P2ChartInstance = null;
+    let pieTurbiedadSP3ChartInstance = null;
+    let pieTurbiedadTonchalaChartInstance = null;
+    let comparisonVolumenChartInstance = null;
+    let comparisonCostoChartInstance = null;
+    let operatorDailyChartInstance = null;
+
+    const AUTO_JSON_FILE = "data.json";
+
+    const FIELD_FECHA = "Fecha";
+    const FIELD_HORA = "Hora";
+    const FIELD_OPERADOR = "Operador";
+
+    const PIE_COLORS = [
+      "#0f766e",
+      "#0ea5e9",
+      "#7c3aed",
+      "#b45309",
+      "#dc2626",
+      "#475569",
+      "#111827"
+    ];
+
+    const PORTICO_STACK_COLORS = {
+      p1: "#0f766e",
+      p2: "#0ea5e9",
+      p3: "#7c3aed",
+      tonchala: "#b45309"
+    };
+
+    const PLANT_COLORS = {
+      p1p2: "#0f766e",
+      sp3: "#7c3aed",
+      tonchala: "#b45309"
+    };
+
+    const OPERATOR_COLOR_PALETTE = [
+      "#2563eb",
+      "#16a34a",
+      "#dc2626",
+      "#7c3aed",
+      "#ea580c",
+      "#0891b2",
+      "#ca8a04"
+    ];
+
+    const OPERATOR_OTHERS_COLOR = "#6b7280";
+
+    const PLANT_CONFIG = {
+      p1p2: {
+        key: "p1p2",
+        label: "P1 y P2",
+        turbidezField: "Turbidez_Planta",
+        fields: {
+          dosis: "Dosis_P1P2",
+          m3: "$/m3_P1P2",
+          clarP1: "Turbidez_Clar_P1",
+          clarP2: "Turbidez_Clar_P2",
+          finales: "Finales",
+          caudal: "Q_Tratada_P1P2",
+          califFinal: "Calificación_F"
+        }
+      },
+      sp3: {
+        key: "sp3",
+        label: "SP3",
+        turbidezField: "Turb_P3",
+        fields: {
+          dosis: "Dosis_Aplic_Coag1",
+          m3: "$/m3_SP3",
+          clarificadas: "Clarificadas_P3",
+          finales: "Turb_Sal",
+          caudal: "Caudal_m3_P3",
+          califFinal: "Calificación_Final_P3"
+        }
+      },
+      tonchala: {
+        key: "tonchala",
+        label: "TONCHALÁ",
+        turbidezField: "Turb_Ing_Tonch",
+        fields: {
+          dosis: "Apl_PHCA",
+          m3: "$/m3_Tonch",
+          clarificadas: "Clarif_Tonch",
+          finales: "Turb_Prod_Tonch",
+          caudal: "Q_Trat_Tonch",
+          califFinal: "Calificación_Final_Tonch"
+        }
+      }
+    };
+
+    const CHART_PLANTS = [
+      { key: "p1p2", label: "P1 y P2", color: "#0f766e" },
+      { key: "sp3", label: "SP3", color: "#7c3aed" },
+      { key: "tonchala", label: "TONCHALÁ", color: "#b45309" }
+    ];
+
+    const ranges = [
+      { key: "0-50", label: "0 a 50", test: v => v >= 0 && v <= 50 },
+      { key: "51-100", label: "51 a 100", test: v => v >= 51 && v <= 100 },
+      { key: "101-200", label: "101 a 200", test: v => v >= 101 && v <= 200 },
+      { key: "201-300", label: "201 a 300", test: v => v >= 201 && v <= 300 },
+      { key: "301-500", label: "301 a 500", test: v => v >= 301 && v <= 500 },
+      { key: "501-1000", label: "501 a 1.000", test: v => v >= 501 && v <= 1000 },
+      { key: ">1000", label: "> 1000", test: v => v > 1000 }
+    ];
+
+    const nombresMes = [
+      "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+      "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+    ];
+
+    const fileInput = document.getElementById("fileInput");
+    const statusEl = document.getElementById("status");
+    const tablaEl = document.getElementById("tabla");
+    const tablaMesesEl = document.getElementById("tablaMeses");
+    const tablaResumenEl = document.getElementById("tablaResumen");
+    const btnDosis = document.getElementById("btnDosis");
+    const btnClarificadas = document.getElementById("btnClarificadas");
+    const btnFinales = document.getElementById("btnFinales");
+    const btnCaudal = document.getElementById("btnCaudal");
+    const btnHoras = document.getElementById("btnHoras");
+    const btnPorcentaje = document.getElementById("btnPorcentaje");
+    const btnM3 = document.getElementById("btnM3");
+    const btnCalifFinal = document.getElementById("btnCalifFinal");
+    const btnP1P2 = document.getElementById("btnP1P2");
+    const btnSP3 = document.getElementById("btnSP3");
+    const btnTonchala = document.getElementById("btnTonchala");
+    const metricTitleEl = document.getElementById("metricTitle");
+    const monthSelectEl = document.getElementById("monthSelect");
+    const daySelectEl = document.getElementById("daySelect");
+    const intervalSelectEl = document.getElementById("intervalSelect");
+    const operatorDailyChartTitleEl = document.getElementById("operatorDailyChartTitle");
+    const operatorDailyChartSubtitleEl = document.getElementById("operatorDailyChartSubtitle");
+    const objectiveBandEl = document.getElementById("objectiveBand");
+    const objectiveValueEl = document.getElementById("objectiveValue");
+
+    Chart.register(ChartDataLabels);
+
+    function getPlantConfig() {
+      return PLANT_CONFIG[currentPlant];
+    }
+
+    function setStatus(msg, ok = false) {
+      statusEl.textContent = msg;
+      statusEl.className = ok ? "msg ok" : "msg";
+    }
+
+    function toNumber(value) {
+      if (value === null || value === undefined || value === "") return NaN;
+      if (typeof value === "number") return value;
+
+      let txt = String(value).trim();
+      if (txt === "") return NaN;
+
+      txt = txt.replace(/\s/g, "");
+
+      if (txt.includes(",") && txt.includes(".")) {
+        txt = txt.replace(/\./g, "").replace(",", ".");
+      } else if (txt.includes(",")) {
+        txt = txt.replace(",", ".");
+      }
+
+      const n = Number(txt);
+      return isNaN(n) ? NaN : n;
+    }
+
+    function parseDateString(value) {
+      if (!value) return null;
+
+      if (typeof value === "string") {
+        const clean = value.trim().substring(0, 10);
+        const m = clean.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (m) {
+          return {
+            year: m[1],
+            month: m[2],
+            day: m[3],
+            isoDay: `${m[1]}-${m[2]}-${m[3]}`,
+            isoMonth: `${m[1]}-${m[2]}`
+          };
+        }
+      }
+
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return null;
+
+      const y = String(d.getFullYear());
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+
+      return {
+        year: y,
+        month: m,
+        day: day,
+        isoDay: `${y}-${m}-${day}`,
+        isoMonth: `${y}-${m}`
+      };
+    }
+
+    function getMonthNameFromRow(row) {
+      const parsed = parseDateString(row[FIELD_FECHA]);
+      if (!parsed) return null;
+
+      const monthIndex = Number(parsed.month) - 1;
+      if (monthIndex < 0 || monthIndex > 11) return null;
+
+      return nombresMes[monthIndex];
+    }
+
+    function getMonthIndex(monthName) {
+      return nombresMes.indexOf(monthName);
+    }
+
+    function getCurrentMetricLabel() {
+      if (currentMode === "dosis") return "Dosis";
+      if (currentMode === "clarificadas") return "Clarificadas";
+      if (currentMode === "finales") return "Finales";
+      if (currentMode === "caudal") return "Volumen M3";
+      if (currentMode === "horas") return "Horas";
+      if (currentMode === "m3") return "$/m3";
+      if (currentMode === "califFinal") return "Calificación Final";
+      return "Porcentaje";
+    }
+
+    function getCurrentPlantLabel() {
+      return getPlantConfig().label;
+    }
+
+    function fillIntervalSelector() {
+      if (!intervalSelectEl) return;
+
+      const selectedValue = intervalSelectEl.value || "all";
+      intervalSelectEl.innerHTML = '<option value="all">Todos</option>' +
+        ranges.map(r => `<option value="${r.key}">${r.label}</option>`).join("");
+
+      intervalSelectEl.value = selectedValue;
+    }
+
+    function getSelectedRangeConfig() {
+      const intervalKey = intervalSelectEl ? intervalSelectEl.value : "all";
+      if (!intervalKey || intervalKey === "all") return null;
+      return ranges.find(r => r.key === intervalKey) || null;
+    }
+
+    function rowMatchesSelectedRange(row, plantConfig) {
+      const rangeConfig = getSelectedRangeConfig();
+      if (!rangeConfig) return true;
+
+      const turbidez = getTurbidezPromedioValue(row, plantConfig);
+      if (isNaN(turbidez)) return false;
+
+      return rangeConfig.test(turbidez);
+    }
+
+    function getChartMetricAxisLabel(mode = currentMode) {
+      if (mode === "dosis") return "Dosis";
+      if (mode === "clarificadas") return "Clarificadas";
+      if (mode === "finales") return "Finales";
+      if (mode === "caudal") return "Volumen M3";
+      if (mode === "horas") return "Horas";
+      if (mode === "porcentaje") return "Porcentaje";
+      if (mode === "m3") return "$/m3";
+      if (mode === "califFinal") return "Calificación";
+      return "Valor";
+    }
+
+    function getChartMetricFormatter(mode = currentMode) {
+      return function(value) {
+        if (value === null || value === undefined || isNaN(value)) return "0";
+
+        if (mode === "caudal") return formatIntegerEs(value);
+        if (mode === "horas") return formatIntegerEs(value);
+        if (mode === "porcentaje") return formatPercentValue(value, 1);
+        if (mode === "m3") return "$ " + formatNumberEs(value, 2);
+
+        return formatNumberEs(value, 2);
+      };
+    }
+
+    function getOperatorColorMap(operatorLabels) {
+      const colorMap = {};
+      let paletteIndex = 0;
+
+      operatorLabels.forEach(label => {
+        if (label === "Otros") {
+          colorMap[label] = OPERATOR_OTHERS_COLOR;
+        } else {
+          colorMap[label] = OPERATOR_COLOR_PALETTE[paletteIndex % OPERATOR_COLOR_PALETTE.length];
+          paletteIndex += 1;
+        }
+      });
+
+      return colorMap;
+    }
+
+    function stableSortOperatorEntries(entries, orderMap) {
+      return entries.slice().sort((a, b) => {
+        if (b.value !== a.value) return b.value - a.value;
+        return (orderMap[a.operator] || 0) - (orderMap[b.operator] || 0);
+      });
+    }
+
+    function getValidRowsForOperatorDailyChart(data, plantConfig) {
+      const monthIso = monthSelectEl.value;
+      if (!monthIso) return [];
+
+      return data.filter(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed || parsed.isoMonth !== monthIso) return false;
+        return true;
+      });
+    }
+
+    function getAvailableMonthsFromData(data) {
+      const monthMap = new Map();
+
+      data.forEach(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed) return;
+        if (!monthMap.has(parsed.isoMonth)) {
+          monthMap.set(parsed.isoMonth, nombresMes[Number(parsed.month) - 1]);
+        }
+      });
+
+      return Array.from(monthMap.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([isoMonth, monthLabel]) => ({ isoMonth, monthLabel }));
+    }
+
+    function buildOperatorChartModel(data, plantConfig, mode) {
+      const monthIso = monthSelectEl.value;
+      const isMonthlyView = !monthIso;
+      const selectedRange = getSelectedRangeConfig();
+      const rangeLabel = selectedRange ? selectedRange.label : "Todos";
+
+      const sourceRows = isMonthlyView
+        ? data.filter(row => !!parseDateString(row[FIELD_FECHA]))
+        : getValidRowsForOperatorDailyChart(data, plantConfig);
+
+      const operatorAppearance = [];
+      const seenOperators = new Set();
+
+      sourceRows.forEach(row => {
+        const operator = String(row[FIELD_OPERADOR] || "").trim();
+        if (!operator || seenOperators.has(operator)) return;
+        seenOperators.add(operator);
+        operatorAppearance.push(operator);
+      });
+
+      const primaryOperators = operatorAppearance.slice(0, 7);
+      const hasOthersGroup = operatorAppearance.length > 7;
+      const operatorLabels = hasOthersGroup ? [...primaryOperators, "Otros"] : [...primaryOperators];
+
+      if (!operatorLabels.length) {
+        return {
+          state: "no-data",
+          message: isMonthlyView
+            ? "No hay operadores válidos para los datos disponibles."
+            : "No hay operadores válidos para el mes seleccionado.",
+          monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
+          rangeLabel,
+          isMonthlyView
+        };
+      }
+
+      const groupDefs = isMonthlyView
+        ? getAvailableMonthsFromData(sourceRows).map(item => ({ key: item.isoMonth, label: item.monthLabel }))
+        : Array.from({ length: getLastDayOfMonthFromIso(monthIso) }, (_, index) => ({
+            key: String(index + 1),
+            label: String(index + 1)
+          }));
+
+      if (!groupDefs.length) {
+        return {
+          state: "no-data",
+          message: isMonthlyView
+            ? "No hay meses válidos para graficar."
+            : "No hay días válidos para graficar.",
+          monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
+          rangeLabel,
+          isMonthlyView
+        };
+      }
+
+      const operatorOrderMap = {};
+      operatorLabels.forEach((operator, index) => {
+        operatorOrderMap[operator] = index;
+      });
+      const colorMap = getOperatorColorMap(operatorLabels);
+
+      const grouped = {};
+      groupDefs.forEach(group => {
+        grouped[group.key] = {};
+        operatorLabels.forEach(operator => {
+          grouped[group.key][operator] = {
+            weightedEntries: [],
+            sumValues: [],
+            pctNumerator: 0,
+            pctDenominator: 0,
+            hasRawData: false
+          };
+        });
+      });
+
+      sourceRows.forEach(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed) return;
+
+        const groupKey = isMonthlyView ? parsed.isoMonth : String(Number(parsed.day));
+        if (!grouped[groupKey]) return;
+
+        const rawOperator = String(row[FIELD_OPERADOR] || "").trim();
+        if (!rawOperator) return;
+
+        const operator = primaryOperators.includes(rawOperator) ? rawOperator : (hasOthersGroup ? "Otros" : rawOperator);
+        if (!grouped[groupKey][operator]) return;
+
+        const bucket = grouped[groupKey][operator];
+        bucket.hasRawData = true;
+
+        if (mode === "porcentaje") {
+          const weight = getWeightValue(row, plantConfig);
+          if (isNaN(weight) || weight <= 0) return;
+
+          bucket.pctDenominator += weight;
+          if (rowMatchesSelectedRange(row, plantConfig)) {
+            bucket.pctNumerator += weight;
+          }
+          return;
+        }
+
+        if (!rowMatchesSelectedRange(row, plantConfig)) return;
+
+        const metricValue = getMetricValue(row, plantConfig, mode);
+        if (isNaN(metricValue)) return;
+
+        if (isWeightedAverageMode(mode)) {
+          const weight = getWeightValue(row, plantConfig);
+          if (isNaN(weight) || weight <= 0) return;
+          bucket.weightedEntries.push({ value: metricValue, weight: weight });
+          return;
+        }
+
+        if (isSumMode(mode)) {
+          bucket.sumValues.push(metricValue);
+        }
+      });
+
+      const labels = [];
+      const rankCount = Math.max(operatorLabels.length, 1);
+      const datasets = Array.from({ length: rankCount }, (_, index) => ({
+        label: `Posición ${index + 1}`,
+        data: [],
+        backgroundColor: [],
+        borderColor: [],
+        borderWidth: 1,
+        operatorNames: []
+      }));
+
+      let hasApplicableData = false;
+      let maxValue = 0;
+
+      groupDefs.forEach(group => {
+        labels.push(group.label);
+
+        const entries = operatorLabels.map(operator => {
+          const bucket = grouped[group.key][operator];
+          let value = 0;
+
+          if (mode === "porcentaje") {
+            value = bucket.pctDenominator > 0 ? (bucket.pctNumerator / bucket.pctDenominator) * 100 : 0;
+            if (bucket.pctDenominator > 0) hasApplicableData = true;
+          } else if (isWeightedAverageMode(mode)) {
+            const weightedAvg = weightedAverageEntries(bucket.weightedEntries);
+            value = weightedAvg === "" ? 0 : Number(weightedAvg);
+            if (bucket.weightedEntries.length > 0) hasApplicableData = true;
+          } else if (isSumMode(mode)) {
+            value = bucket.sumValues.length ? sumNumber(bucket.sumValues) : 0;
+            if (bucket.sumValues.length > 0) hasApplicableData = true;
+          }
+
+          if (!isNaN(value) && value > maxValue) maxValue = value;
+
+          return {
+            operator,
+            value: isNaN(value) ? 0 : value
+          };
+        });
+
+        const sortedEntries = stableSortOperatorEntries(entries, operatorOrderMap);
+
+        datasets.forEach((dataset, rankIndex) => {
+          const entry = sortedEntries[rankIndex] || { operator: "", value: 0 };
+          const color = colorMap[entry.operator] || OPERATOR_OTHERS_COLOR;
+          dataset.data.push(entry.value);
+          dataset.backgroundColor.push(color);
+          dataset.borderColor.push(color);
+          dataset.operatorNames.push(entry.operator);
+        });
+      });
+
+      return {
+        state: hasApplicableData ? "ok" : "not-applicable",
+        labels,
+        datasets,
+        operatorLabels,
+        monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
+        rangeLabel,
+        maxValue,
+        isMonthlyView
+      };
+    }
+
+    function getAllColumns(data) {
+      const columns = new Set();
+      data.forEach(row => {
+        if (row && typeof row === "object") {
+          Object.keys(row).forEach(key => columns.add(key));
+        }
+      });
+      return columns;
+    }
+
+    function validarCampos(data, plantConfig, mode) {
+      if (!Array.isArray(data) || data.length === 0) {
+        setStatus("El JSON está vacío o no es un arreglo.");
+        return false;
+      }
+
+      const columnas = getAllColumns(data);
+      const faltantes = [];
+      const plantFields = plantConfig.fields;
+
+      if (!columnas.has(FIELD_FECHA)) faltantes.push(FIELD_FECHA);
+      if (!columnas.has(FIELD_HORA)) faltantes.push(FIELD_HORA);
+      if (!columnas.has(FIELD_OPERADOR)) faltantes.push(FIELD_OPERADOR);
+      if (!columnas.has(plantConfig.turbidezField)) faltantes.push(plantConfig.turbidezField);
+
+      if (mode === "dosis" && plantFields.dosis && !columnas.has(plantFields.dosis)) {
+        faltantes.push(plantFields.dosis);
+      }
+
+      if (mode === "m3" && plantFields.m3 && !columnas.has(plantFields.m3)) {
+        faltantes.push(plantFields.m3);
+      }
+
+      if (mode === "clarificadas") {
+        if (plantConfig.key === "p1p2") {
+          if (plantFields.clarP1 && !columnas.has(plantFields.clarP1)) faltantes.push(plantFields.clarP1);
+          if (plantFields.clarP2 && !columnas.has(plantFields.clarP2)) faltantes.push(plantFields.clarP2);
+        } else {
+          if (plantFields.clarificadas && !columnas.has(plantFields.clarificadas)) faltantes.push(plantFields.clarificadas);
+        }
+      }
+
+      if (mode === "finales" && plantFields.finales && !columnas.has(plantFields.finales)) {
+        faltantes.push(plantFields.finales);
+      }
+
+      if (mode === "caudal" && plantFields.caudal && !columnas.has(plantFields.caudal)) {
+        faltantes.push(plantFields.caudal);
+      }
+
+      if (mode === "califFinal" && plantFields.califFinal && !columnas.has(plantFields.califFinal)) {
+        faltantes.push(plantFields.califFinal);
+      }
+
+      const camposAnalisis = [
+        "Turbidez_Planta",
+        "Turb_P3",
+        "Turb_Ing_Tonch",
+        "Dosis_P1P2",
+        "Dosis_Aplic_Coag1",
+        "Apl_PHCA",
+        "$/m3_P1P2",
+        "$/m3_SP3",
+        "$/m3_Tonch",
+        "Costo_P1P2",
+        "Costo_P3",
+        "Costo_Tonchalá",
+        "Q_Tratada_P1",
+        "Q_Tratada_P2",
+        "Vol_P3",
+        "Q_Trat_Tonch",
+        "Costo_P1",
+        "Costo_P2"
+      ];
+
+      camposAnalisis.forEach(campo => {
+        if (!columnas.has(campo)) faltantes.push(campo);
+      });
+
+      const faltantesUnicos = [...new Set(faltantes)];
+
+      if (faltantesUnicos.length > 0) {
+        setStatus("Faltan estas columnas en el JSON:\n- " + faltantesUnicos.join("\n- "));
+        return false;
+      }
+
+      return true;
+    }
+
+    function fillSelectors(data) {
+      const months = new Map();
+      const days = new Set();
+
+      data.forEach(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed) return;
+
+        const year = parsed.isoMonth.slice(0, 4);
+        const monthNum = parseInt(parsed.isoMonth.slice(5, 7), 10);
+        const label = nombresMes[monthNum - 1] + " " + year;
+
+        months.set(parsed.isoMonth, label);
+        days.add(parsed.isoDay);
+      });
+
+      const selectedMonth = monthSelectEl.value;
+      const selectedDay = daySelectEl.value;
+
+      monthSelectEl.innerHTML =
+        '<option value="">Todos</option>' +
+        Array.from(months.entries())
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .map(([value, label]) => `<option value="${value}">${label}</option>`)
+          .join("");
+
+      daySelectEl.innerHTML =
+        '<option value="">Todos</option>' +
+        Array.from(days)
+          .sort((a, b) => b.localeCompare(a))
+          .map(day => {
+            const [year, month, d] = day.split("-");
+            const formatted = `${d}/${month}/${year}`;
+            return `<option value="${day}">${formatted}</option>`;
+          })
+          .join("");
+
+      if (selectedMonth) monthSelectEl.value = selectedMonth;
+      if (selectedDay) daySelectEl.value = selectedDay;
+    }
+
+    function applyDateFilter(data) {
+      const selectedMonth = monthSelectEl.value;
+      const selectedDay = daySelectEl.value;
+
+      return data.filter(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed) return false;
+
+        if (selectedMonth && parsed.isoMonth !== selectedMonth) return false;
+        if (selectedDay && parsed.isoDay !== selectedDay) return false;
+
+        return true;
+      });
+    }
+
+    function getMonthFilteredDataOnly(data) {
+      const selectedMonth = monthSelectEl.value;
+
+      if (!selectedMonth) return [];
+
+      return data.filter(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed) return false;
+        return parsed.isoMonth === selectedMonth;
+      });
+    }
+
+    function getMonthLabelFromIso(isoMonth) {
+      if (!isoMonth) return "";
+      const [year, month] = isoMonth.split("-");
+      const monthIndex = Number(month) - 1;
+      if (monthIndex < 0 || monthIndex > 11) return isoMonth;
+      return `${nombresMes[monthIndex]} ${year}`;
+    }
+
+    function getLastDayOfMonthFromIso(isoMonth) {
+      if (!isoMonth) return 31;
+      const [year, month] = isoMonth.split("-");
+      return new Date(Number(year), Number(month), 0).getDate();
+    }
+
+    function getTurbidezPromedioValue(row, plantConfig) {
+      const turbidez = toNumber(row[plantConfig.turbidezField]);
+      return isNaN(turbidez) ? NaN : turbidez;
+    }
+
+    function getMetricValue(row, plantConfig, mode) {
+      const plantFields = plantConfig.fields;
+
+      if (mode === "dosis") {
+        const value = toNumber(row[plantFields.dosis]);
+        return isNaN(value) ? NaN : value;
+      }
+
+      if (mode === "m3") {
+        const value = toNumber(row[plantFields.m3]);
+        return isNaN(value) ? NaN : value;
+      }
+
+      if (mode === "clarificadas") {
+        if (plantConfig.key === "p1p2") {
+          const c1 = toNumber(row[plantFields.clarP1]);
+          const c2 = toNumber(row[plantFields.clarP2]);
+
+          if (isNaN(c1) && isNaN(c2)) return NaN;
+          return ((isNaN(c1) ? 0 : c1) + (isNaN(c2) ? 0 : c2)) / 2;
+        }
+
+        const value = toNumber(row[plantFields.clarificadas]);
+        return isNaN(value) ? NaN : value;
+      }
+
+      if (mode === "finales") {
+        const value = toNumber(row[plantFields.finales]);
+        return isNaN(value) ? NaN : value;
+      }
+
+      if (mode === "caudal") {
+        const value = toNumber(row[plantFields.caudal]);
+        return isNaN(value) ? NaN : value;
+      }
+
+      if (mode === "horas") {
+        return 1;
+      }
+
+      if (mode === "califFinal") {
+        const value = toNumber(row[plantFields.califFinal]);
+        return isNaN(value) ? NaN : value;
+      }
+
+      return NaN;
+    }
+
+    function getWeightValue(row, plantConfig) {
+      const peso = getMetricValue(row, plantConfig, "caudal");
+      return (!isNaN(peso) && peso > 0) ? peso : NaN;
+    }
+
+    function weightedAverageEntries(entries) {
+      if (!entries || entries.length === 0) return "";
+
+      let weightedSum = 0;
+      let totalWeight = 0;
+
+      entries.forEach(entry => {
+        if (!entry) return;
+
+        const value = toNumber(entry.value);
+        const weight = toNumber(entry.weight);
+
+        if (isNaN(value) || isNaN(weight) || weight <= 0) return;
+
+        weightedSum += value * weight;
+        totalWeight += weight;
+      });
+
+      if (totalWeight === 0) return "";
+      return weightedSum / totalWeight;
+    }
+
+    function averageNumber(arr) {
+      if (!arr || arr.length === 0) return "";
+      const sum = arr.reduce((a, b) => a + b, 0);
+      return sum / arr.length;
+    }
+
+    function sumNumber(arr) {
+      if (!arr || arr.length === 0) return 0;
+      return arr.reduce((a, b) => a + b, 0);
+    }
+
+    function isWeightedAverageMode(mode = currentMode) {
+      return mode === "dosis" ||
+             mode === "m3" ||
+             mode === "clarificadas" ||
+             mode === "finales" ||
+             mode === "califFinal";
+    }
+
+    function isSumMode(mode = currentMode) {
+      return mode === "caudal" || mode === "horas";
+    }
+
+    function getSortedKeysForType(keys, type) {
+      if (type === "month") {
+        return keys.sort((a, b) => getMonthIndex(a) - getMonthIndex(b));
+      }
+      return keys.sort((a, b) => a.localeCompare(b));
+    }
+
+    function formatNTU(entries) {
+      const avg = weightedAverageEntries(entries);
+      if (avg === "") return "";
+      return avg.toFixed(2).replace(".", ",") + " NTU";
+    }
+
+    function formatCaudal(value) {
+      if (value === "" || value === null || value === undefined || isNaN(value)) return "";
+      return Math.round(value).toLocaleString("es-CO");
+    }
+
+    function formatHoras(value) {
+      if (value === "" || value === null || value === undefined || isNaN(value)) return "";
+      return Math.round(value).toLocaleString("es-CO");
+    }
+
+    function formatNumberEs(value, decimals = 2) {
+      if (value === "" || value === null || value === undefined || isNaN(value)) return "";
+      return Number(value).toLocaleString("es-CO", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function formatIntegerEs(value) {
+      if (value === "" || value === null || value === undefined || isNaN(value)) return "";
+      return Math.round(Number(value)).toLocaleString("es-CO", {
+        maximumFractionDigits: 0
+      });
+    }
+
+    function formatResumenValue(variableKey, value) {
+      if (value === "" || value === null || value === undefined || isNaN(value)) return "";
+
+      if (variableKey === "m3") {
+        return "$ " + Number(value).toLocaleString("es-CO", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      if (variableKey === "caudal" || variableKey === "horas") {
+        return formatIntegerEs(value);
+      }
+
+      return formatNumberEs(value, 2);
+    }
+
+    function formatPercentValue(value, decimals = 1) {
+      if (value === null || value === undefined || isNaN(value)) return "";
+      return Number(value).toLocaleString("es-CO", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      }) + "%";
+    }
+
+    function formatTotalNumber(value) {
+      if (value === null || value === undefined || isNaN(value)) return "0";
+      return Number(value).toLocaleString("es-CO", {
+        maximumFractionDigits: 2
+      });
+    }
+
+    function collectMetricEntries(data, plantConfig, mode, fieldGetter = null, requireBucket = false) {
+      const grouped = {};
+      const flat = [];
+
+      data.forEach(row => {
+        const turbidez = getTurbidezPromedioValue(row, plantConfig);
+        if (isNaN(turbidez)) return;
+
+        const metricValue = getMetricValue(row, plantConfig, mode);
+        if (isNaN(metricValue)) return;
+
+        const bucket = ranges.find(r => r.test(turbidez));
+        if (requireBucket && !bucket) return;
+
+        let entry;
+
+        if (isWeightedAverageMode(mode)) {
+          const peso = getWeightValue(row, plantConfig);
+          if (isNaN(peso)) return;
+
+          entry = {
+            value: metricValue,
+            weight: peso,
+            turbidez: turbidez,
+            bucketKey: bucket ? bucket.key : null,
+            row: row
+          };
+        } else {
+          entry = {
+            value: metricValue,
+            turbidez: turbidez,
+            bucketKey: bucket ? bucket.key : null,
+            row: row
+          };
+        }
+
+        flat.push(entry);
+
+        if (typeof fieldGetter === "function") {
+          const groupKey = fieldGetter(row);
+          if (!groupKey) return;
+
+          if (!grouped[groupKey]) grouped[groupKey] = {};
+          if (!grouped[groupKey]._all) grouped[groupKey]._all = [];
+          grouped[groupKey]._all.push(entry);
+
+          if (bucket) {
+            if (!grouped[groupKey][bucket.key]) grouped[groupKey][bucket.key] = [];
+            grouped[groupKey][bucket.key].push(entry);
+          }
+        }
+      });
+
+      return { grouped, flat };
+    }
+
+    function buildWeightedTurbidityByField(data, fieldGetter, plantConfig) {
+      const result = {};
+
+      data.forEach(row => {
+        const keyValue = fieldGetter(row);
+        if (!keyValue) return;
+
+        const turbidez = getTurbidezPromedioValue(row, plantConfig);
+        const peso = getWeightValue(row, plantConfig);
+
+        if (isNaN(turbidez) || isNaN(peso)) return;
+
+        if (!result[keyValue]) result[keyValue] = [];
+        result[keyValue].push({ value: turbidez, weight: peso });
+      });
+
+      return result;
+    }
+
+    function buildValueMatrixByField(data, fieldGetter, plantConfig, mode) {
+      const { grouped } = collectMetricEntries(data, plantConfig, mode, fieldGetter, true);
+      const matrix = {};
+
+      Object.keys(grouped).forEach(groupKey => {
+        matrix[groupKey] = {};
+
+        ranges.forEach(r => {
+          const entries = grouped[groupKey][r.key] || [];
+
+          if (isWeightedAverageMode(mode)) {
+            matrix[groupKey][r.key] = entries.map(entry => ({
+              value: entry.value,
+              weight: entry.weight
+            }));
+          } else {
+            matrix[groupKey][r.key] = entries.map(entry => entry.value);
+          }
+        });
+      });
+
+      return matrix;
+    }
+
+    function buildPercentageMatrixByField(data, fieldGetter, plantConfig) {
+      const matrix = {};
+
+      data.forEach(row => {
+        const keyValue = fieldGetter(row);
+        const turbidez = getTurbidezPromedioValue(row, plantConfig);
+
+        if (!keyValue || isNaN(turbidez)) return;
+
+        const bucket = ranges.find(r => r.test(turbidez));
+        if (!bucket) return;
+
+        if (!matrix[keyValue]) {
+          matrix[keyValue] = { total: 0, counts: {} };
+        }
+
+        matrix[keyValue].total += 1;
+        matrix[keyValue].counts[bucket.key] = (matrix[keyValue].counts[bucket.key] || 0) + 1;
+      });
+
+      return matrix;
+    }
+
+    function getUnifiedMetricResult(data, plantKey, mode) {
+      const config = PLANT_CONFIG[plantKey];
+      const { flat } = collectMetricEntries(data, config, mode, null, false);
+
+      if (!flat.length) return "";
+
+      if (isWeightedAverageMode(mode)) {
+        return weightedAverageEntries(
+          flat.map(entry => ({ value: entry.value, weight: entry.weight }))
+        );
+      }
+
+      if (isSumMode(mode)) {
+        return flat.reduce((acc, entry) => acc + entry.value, 0);
+      }
+
+      return "";
+    }
+
+    function renderValueTableGeneric(targetEl, matrix, avgTurbidityMap, rowHeaderLabel, rowType) {
+      const rowKeys = getSortedKeysForType(Object.keys(matrix), rowType);
+      const sumMode = isSumMode();
+      const weightedMode = isWeightedAverageMode();
+      const showTotal = sumMode || weightedMode;
+
+      let html = `<thead><tr><th>${rowHeaderLabel}</th><th class='turb-col'>Turbidez Promedio</th>`;
+      ranges.forEach(r => {
+        html += `<th>${r.label}</th>`;
+      });
+
+      if (showTotal) html += "<th>Total</th>";
+      html += "</tr></thead><tbody>";
+
+      const totalTurbidez = [];
+      const totals = {};
+      const rowTotals = [];
+      const globalWeightedEntries = [];
+
+      ranges.forEach(r => totals[r.key] = []);
+
+      rowKeys.forEach(rowKey => {
+        let rowTotal = 0;
+        const rowWeightedEntries = [];
+
+        html += `<tr><td>${rowKey}</td>`;
+        html += `<td class="turb-col"><span class="ntu-box">${formatNTU(avgTurbidityMap[rowKey])}</span></td>`;
+
+        if (avgTurbidityMap[rowKey] && avgTurbidityMap[rowKey].length) {
+          totalTurbidez.push(...avgTurbidityMap[rowKey]);
+        }
+
+        ranges.forEach(r => {
+          const valArr = (matrix[rowKey] && matrix[rowKey][r.key]) ? matrix[rowKey][r.key] : [];
+          let cellValue = "";
+
+          if (valArr.length) {
+            if (sumMode) {
+              const sumVal = sumNumber(valArr);
+
+              if (currentMode === "caudal") {
+                cellValue = formatCaudal(sumVal);
+              } else if (currentMode === "horas") {
+                cellValue = formatHoras(sumVal);
+              }
+
+              rowTotal += sumVal;
+              totals[r.key].push(sumVal);
+            } else if (weightedMode) {
+              const weightedVal = weightedAverageEntries(valArr);
+              cellValue = weightedVal === "" ? "" : weightedVal.toFixed(2);
+
+              totals[r.key].push(...valArr);
+              rowWeightedEntries.push(...valArr);
+              globalWeightedEntries.push(...valArr);
+            }
+          }
+
+          html += `<td>${cellValue}</td>`;
+        });
+
+        if (sumMode) {
+          rowTotals.push(rowTotal);
+
+          if (currentMode === "caudal") {
+            html += `<td><strong>${formatCaudal(rowTotal)}</strong></td>`;
+          } else if (currentMode === "horas") {
+            html += `<td><strong>${formatHoras(rowTotal)}</strong></td>`;
+          }
+        } else if (weightedMode) {
+          const weightedAvg = weightedAverageEntries(rowWeightedEntries);
+          html += `<td><strong>${weightedAvg === "" ? "" : weightedAvg.toFixed(2)}</strong></td>`;
+        }
+
+        html += "</tr>";
+      });
+
+      const colspan = showTotal ? ranges.length + 3 : ranges.length + 2;
+
+      if (rowKeys.length === 0) {
+        html += `<tr><td colspan="${colspan}">No hay datos válidos para mostrar.</td></tr>`;
+      } else {
+        html += `<tr class="summary-row">`;
+        html += `<td>Promedio</td>`;
+        html += `<td class="turb-col"><span class="ntu-box">${formatNTU(totalTurbidez)}</span></td>`;
+
+        ranges.forEach(r => {
+          if (sumMode) {
+            const totalBucket = sumNumber(totals[r.key]);
+
+            if (currentMode === "caudal") {
+              html += `<td>${totalBucket === 0 ? "" : formatCaudal(totalBucket)}</td>`;
+            } else if (currentMode === "horas") {
+              html += `<td>${totalBucket === 0 ? "" : formatHoras(totalBucket)}</td>`;
+            }
+          } else if (weightedMode) {
+            const val = weightedAverageEntries(totals[r.key]);
+            html += `<td>${val === "" ? "" : val.toFixed(2)}</td>`;
+          }
+        });
+
+        if (sumMode) {
+          const totalGeneral = sumNumber(rowTotals);
+
+          if (currentMode === "caudal") {
+            html += `<td><strong>${formatCaudal(totalGeneral)}</strong></td>`;
+          } else if (currentMode === "horas") {
+            html += `<td><strong>${formatHoras(totalGeneral)}</strong></td>`;
+          }
+        } else if (weightedMode) {
+          const totalGeneral = weightedAverageEntries(globalWeightedEntries);
+          html += `<td><strong>${totalGeneral === "" ? "" : totalGeneral.toFixed(2)}</strong></td>`;
+        }
+
+        html += `</tr>`;
+      }
+
+      html += "</tbody>";
+      targetEl.innerHTML = html;
+    }
+
+    function renderPercentageTableGeneric(targetEl, matrix, avgTurbidityMap, rowHeaderLabel, rowType) {
+      const rowKeys = getSortedKeysForType(Object.keys(matrix), rowType);
+
+      let html = `<thead><tr><th>${rowHeaderLabel}</th><th class='turb-col'>Turbidez Promedio</th>`;
+      ranges.forEach(r => {
+        html += `<th>${r.label}</th>`;
+      });
+      html += "</tr></thead><tbody>";
+
+      const totalTurbidez = [];
+      const totals = {};
+      ranges.forEach(r => totals[r.key] = []);
+
+      rowKeys.forEach(rowKey => {
+        html += `<tr><td>${rowKey}</td>`;
+        html += `<td class="turb-col"><span class="ntu-box">${formatNTU(avgTurbidityMap[rowKey])}</span></td>`;
+
+        if (avgTurbidityMap[rowKey] && avgTurbidityMap[rowKey].length) {
+          totalTurbidez.push(...avgTurbidityMap[rowKey]);
+        }
+
+        ranges.forEach(r => {
+          const count = matrix[rowKey].counts[r.key] || 0;
+          const pct = matrix[rowKey].total ? (count / matrix[rowKey].total) * 100 : 0;
+
+          totals[r.key].push(pct);
+
+          if (pct === 0) {
+            html += `<td></td>`;
+          } else {
+            html += `<td>${pct.toFixed(2)}%</td>`;
+          }
+        });
+
+        html += "</tr>";
+      });
+
+      if (rowKeys.length === 0) {
+        html += `<tr><td colspan="${ranges.length + 2}">No hay datos válidos para mostrar.</td></tr>`;
+      } else {
+        html += `<tr class="summary-row">`;
+        html += `<td>Promedio</td>`;
+        html += `<td class="turb-col"><span class="ntu-box">${formatNTU(totalTurbidez)}</span></td>`;
+
+        ranges.forEach(r => {
+          const avg = averageNumber(totals[r.key]);
+          if (avg === "") {
+            html += `<td></td>`;
+          } else {
+            html += `<td>${avg.toFixed(2)}%</td>`;
+          }
+        });
+
+        html += `</tr>`;
+      }
+
+      html += "</tbody>";
+      targetEl.innerHTML = html;
+    }
+
+    function getM3SeriesByPlant(data, plantKey) {
+      const config = PLANT_CONFIG[plantKey];
+      const result = [];
+
+      ranges.forEach(range => {
+        const entries = [];
+
+        data.forEach(row => {
+          const turbidez = getTurbidezPromedioValue(row, config);
+          if (isNaN(turbidez) || !range.test(turbidez)) return;
+
+          const value = getMetricValue(row, config, "m3");
+          const weight = getWeightValue(row, config);
+
+          if (isNaN(value) || isNaN(weight) || weight <= 0) return;
+
+          entries.push({ value, weight });
+        });
+
+        const avg = weightedAverageEntries(entries);
+        result.push(avg === "" ? null : avg);
+      });
+
+      return result;
+    }
+
+
+    function getHourValue(row) {
+      const hour = toNumber(row[FIELD_HORA]);
+      if (isNaN(hour)) return NaN;
+      if (hour < 0 || hour > 23) return NaN;
+      return hour;
+    }
+
+    function averageEntriesSimple(entries) {
+      if (!entries || !entries.length) return "";
+      const validValues = entries
+        .map(entry => entry && entry.value !== undefined ? toNumber(entry.value) : toNumber(entry))
+        .filter(value => !isNaN(value));
+
+      if (!validValues.length) return "";
+      return validValues.reduce((acc, curr) => acc + curr, 0) / validValues.length;
+    }
+
+    function buildDailyTurbiditySeriesByPlant(data, plantKey) {
+      const config = PLANT_CONFIG[plantKey];
+      const monthIso = monthSelectEl.value;
+      const selectedDay = daySelectEl.value;
+
+      if (!monthIso && !selectedDay) {
+        return {
+          mode: "empty",
+          labels: [],
+          values: [],
+          titleSuffix: "Turbiedad promedio diaria",
+          subtitle: "Seleccione un mes o un día para visualizar el gráfico.",
+          xAxisTitle: "",
+          yAxisTitle: "Turbiedad promedio (NTU)",
+          hasData: false
+        };
+      }
+
+      if (selectedDay) {
+        const groupedByHour = {};
+        for (let h = 0; h < 24; h++) {
+          groupedByHour[h] = [];
+        }
+
+        data.forEach(row => {
+          const parsed = parseDateString(row[FIELD_FECHA]);
+          if (!parsed || parsed.isoDay !== selectedDay) return;
+
+          const hour = getHourValue(row);
+          const turbidez = getTurbidezPromedioValue(row, config);
+
+          if (isNaN(hour) || isNaN(turbidez)) return;
+          groupedByHour[hour].push({ value: turbidez });
+        });
+
+        const labels = [];
+        const values = [];
+
+        for (let h = 0; h < 24; h++) {
+          labels.push(String(h + 1));
+          const avg = averageEntriesSimple(groupedByHour[h]);
+          values.push(avg === "" ? null : Number(avg));
+        }
+
+        const hasData = values.some(v => v !== null && !isNaN(v));
+        const [, monthNum, dayNum] = selectedDay.split("-");
+        const dayLabel = `${dayNum}/${monthNum}/${selectedDay.slice(0, 4)}`;
+
+        return {
+          mode: "hourly",
+          labels,
+          values,
+          titleSuffix: "Turbiedad promedio horaria",
+          subtitle: `Día seleccionado: ${dayLabel}. Se muestran las 24 horas del día.`,
+          xAxisTitle: "Horas del día",
+          yAxisTitle: "Turbiedad promedio (NTU)",
+          hasData
+        };
+      }
+
+      const monthData = getMonthFilteredDataOnly(data);
+      const lastDay = getLastDayOfMonthFromIso(monthIso);
+      const groupedByDay = {};
+
+      for (let d = 1; d <= lastDay; d++) {
+        groupedByDay[d] = [];
+      }
+
+      monthData.forEach(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed) return;
+
+        const dayNum = Number(parsed.day);
+        const turbidez = getTurbidezPromedioValue(row, config);
+
+        if (isNaN(turbidez)) return;
+        groupedByDay[dayNum].push({ value: turbidez });
+      });
+
+      const labels = [];
+      const values = [];
+
+      for (let d = 1; d <= lastDay; d++) {
+        labels.push(String(d));
+        const avg = averageEntriesSimple(groupedByDay[d]);
+        values.push(avg === "" ? null : Number(avg));
+      }
+
+      const hasData = values.some(v => v !== null && !isNaN(v));
+
+      return {
+        mode: "daily",
+        labels,
+        values,
+        monthLabel: getMonthLabelFromIso(monthIso),
+        titleSuffix: "Turbiedad promedio diaria",
+        subtitle: `Mes seleccionado: ${getMonthLabelFromIso(monthIso)}. Se muestran los días del mes seleccionado.`,
+        xAxisTitle: "Días del mes",
+        yAxisTitle: "Turbiedad promedio (NTU)",
+        hasData
+      };
+    }
+
+    function destroyDailyCharts() {
+
+      if (dailyP1P2ChartInstance) {
+        dailyP1P2ChartInstance.destroy();
+        dailyP1P2ChartInstance = null;
+      }
+
+      if (dailyTonchalaChartInstance) {
+        dailyTonchalaChartInstance.destroy();
+        dailyTonchalaChartInstance = null;
+      }
+    }
+
+    function destroyAnalysisCharts() {
+      if (boxplotTurbiedadChartInstance) {
+        boxplotTurbiedadChartInstance.destroy();
+        boxplotTurbiedadChartInstance = null;
+      }
+
+      if (boxplotCostosQcosChartInstance) {
+        boxplotCostosQcosChartInstance.destroy();
+        boxplotCostosQcosChartInstance = null;
+      }
+
+      if (boxplotM3ChartInstance) {
+        boxplotM3ChartInstance.destroy();
+        boxplotM3ChartInstance = null;
+      }
+
+      if (pieTurbiedadP1P2ChartInstance) {
+        pieTurbiedadP1P2ChartInstance.destroy();
+        pieTurbiedadP1P2ChartInstance = null;
+      }
+
+      if (pieTurbiedadSP3ChartInstance) {
+        pieTurbiedadSP3ChartInstance.destroy();
+        pieTurbiedadSP3ChartInstance = null;
+      }
+
+      if (pieTurbiedadTonchalaChartInstance) {
+        pieTurbiedadTonchalaChartInstance.destroy();
+        pieTurbiedadTonchalaChartInstance = null;
+      }
+    }
+
+    function destroyComparisonCharts() {
+      if (comparisonVolumenChartInstance) {
+        comparisonVolumenChartInstance.destroy();
+        comparisonVolumenChartInstance = null;
+      }
+
+      if (comparisonCostoChartInstance) {
+        comparisonCostoChartInstance.destroy();
+        comparisonCostoChartInstance = null;
+      }
+    }
+
+    function destroyOperatorDailyChart() {
+      if (operatorDailyChartInstance) {
+        operatorDailyChartInstance.destroy();
+        operatorDailyChartInstance = null;
+      }
+    }
+
+    function clearCanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function drawEmptyMessageOnCanvas(canvasId, message) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.fillStyle = "#64748b";
+      ctx.font = "14px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+      ctx.restore();
+    }
+
+    function getValidFieldValues(data, fieldName) {
+      return data
+        .map(row => toNumber(row[fieldName]))
+        .filter(value => !isNaN(value));
+    }
+
+    function getRangeCountsAndPercentages(values) {
+      const counts = ranges.map(range => {
+        return values.filter(value => range.test(value)).length;
+      });
+
+      const total = counts.reduce((acc, curr) => acc + curr, 0);
+      const percentages = counts.map(count => total > 0 ? (count / total) * 100 : 0);
+
+      return {
+        counts,
+        percentages,
+        total
+      };
+    }
+
+    function sumField(data, fieldName) {
+      return data.reduce((acc, row) => {
+        const value = toNumber(row[fieldName]);
+        return isNaN(value) ? acc : acc + value;
+      }, 0);
+    }
+
+    function buildPorticoTonchalaComposition(data, fieldMap) {
+      const p1 = sumField(data, fieldMap.p1);
+      const p2 = sumField(data, fieldMap.p2);
+      const p3 = sumField(data, fieldMap.p3);
+      const tonchala = sumField(data, fieldMap.tonchala);
+      const porticoTotal = p1 + p2 + p3;
+      const combinedTotal = porticoTotal + tonchala;
+
+      const porticoShareTotal = combinedTotal > 0 ? (porticoTotal / combinedTotal) * 100 : 0;
+      const tonchalaShareTotal = combinedTotal > 0 ? (tonchala / combinedTotal) * 100 : 0;
+
+      const p1ShareWithinPortico = porticoTotal > 0 ? (p1 / porticoTotal) * 100 : 0;
+      const p2ShareWithinPortico = porticoTotal > 0 ? (p2 / porticoTotal) * 100 : 0;
+      const p3ShareWithinPortico = porticoTotal > 0 ? (p3 / porticoTotal) * 100 : 0;
+
+      return {
+        raw: {
+          p1,
+          p2,
+          p3,
+          tonchala,
+          porticoTotal,
+          combinedTotal
+        },
+        plantShare: {
+          portico: porticoShareTotal,
+          tonchala: tonchalaShareTotal
+        },
+        internalShare: {
+          p1: p1ShareWithinPortico,
+          p2: p2ShareWithinPortico,
+          p3: p3ShareWithinPortico
+        },
+        stackedShare: {
+          p1: porticoShareTotal * p1ShareWithinPortico / 100,
+          p2: porticoShareTotal * p2ShareWithinPortico / 100,
+          p3: porticoShareTotal * p3ShareWithinPortico / 100
+        }
+      };
+    }
+
+    function getContrastTextColor(hexColor) {
+      const hex = (hexColor || "").replace("#", "");
+      if (hex.length !== 6) return "#ffffff";
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance > 0.6 ? "#0f172a" : "#ffffff";
+    }
+
+    function renderComparisonChart(canvasId, existingInstance, composition, titleType) {
+      if (existingInstance) {
+        existingInstance.destroy();
+      }
+
+      const hasPorticoData = composition.raw.porticoTotal > 0;
+      const hasTonchalaData = composition.raw.tonchala > 0;
+
+      if (!hasPorticoData && !hasTonchalaData) {
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(canvasId, "No hay datos válidos con los filtros seleccionados");
+        return null;
+      }
+
+      const canvas = document.getElementById(canvasId);
+      const labels = ["Pórtico", "Tonchalá"];
+
+      const datasets = [
+        {
+          label: "P1",
+          data: [composition.stackedShare.p1, 0],
+          backgroundColor: PORTICO_STACK_COLORS.p1,
+          stack: "total"
+        },
+        {
+          label: "P2",
+          data: [composition.stackedShare.p2, 0],
+          backgroundColor: PORTICO_STACK_COLORS.p2,
+          stack: "total"
+        },
+        {
+          label: "P3",
+          data: [composition.stackedShare.p3, 0],
+          backgroundColor: PORTICO_STACK_COLORS.p3,
+          stack: "total"
+        },
+        {
+          label: "Tonchalá",
+          data: [0, composition.plantShare.tonchala],
+          backgroundColor: PORTICO_STACK_COLORS.tonchala,
+          stack: "total"
+        }
+      ];
+
+      return new Chart(canvas, {
+        type: "bar",
+        data: {
+          labels,
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 34,
+              right: 18,
+              bottom: 8,
+              left: 8
+            }
+          },
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                color: "#0f172a",
+                boxWidth: 14,
+                padding: 12,
+                font: {
+                  size: 11
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const datasetLabel = context.dataset.label;
+                  const value = context.raw || 0;
+
+                  if (context.dataIndex === 0) {
+                    if (datasetLabel === "P1") return `P1: ${formatPercentValue(composition.internalShare.p1, 2)} de Pórtico`;
+                    if (datasetLabel === "P2") return `P2: ${formatPercentValue(composition.internalShare.p2, 2)} de Pórtico`;
+                    if (datasetLabel === "P3") return `P3: ${formatPercentValue(composition.internalShare.p3, 2)} de Pórtico`;
+                    return null;
+                  }
+
+                  if (context.dataIndex === 1 && value > 0) {
+                    return `Tonchalá: ${formatPercentValue(composition.plantShare.tonchala, 2)} del total`;
+                  }
+
+                  return null;
+                },
+                afterBody(items) {
+                  if (!items || !items.length) return "";
+
+                  const index = items[0].dataIndex;
+                  if (index === 0) {
+                    return `Pórtico: ${formatPercentValue(composition.plantShare.portico, 2)} del total`;
+                  }
+
+                  return `Tonchalá: ${formatPercentValue(composition.plantShare.tonchala, 2)} del total`;
+                }
+              }
+            },
+            datalabels: {
+              color(context) {
+                return getContrastTextColor(context.dataset.backgroundColor);
+              },
+              font(context) {
+                const value = context.raw || 0;
+                const size = value >= 18 ? 14 : value >= 10 ? 12 : 11;
+                return {
+                  weight: "bold",
+                  size
+                };
+              },
+              textStrokeColor: "rgba(255,255,255,0.65)",
+              textStrokeWidth: 1.5,
+              clamp: true,
+              clip: false,
+              formatter(value, context) {
+                const idx = context.dataIndex;
+                const label = context.dataset.label;
+
+                if (idx === 0) {
+                  if (label === "P1") return value > 0 ? `P1\n${formatPercentValue(composition.internalShare.p1, 1)}` : "";
+                  if (label === "P2") return value > 0 ? `P2\n${formatPercentValue(composition.internalShare.p2, 1)}` : "";
+                  if (label === "P3") return value > 0 ? `P3\n${formatPercentValue(composition.internalShare.p3, 1)}` : "";
+                  return "";
+                }
+
+                if (idx === 1 && label === "Tonchalá" && value > 0) {
+                  return formatPercentValue(composition.plantShare.tonchala, 1);
+                }
+
+                return "";
+              },
+              anchor: "center",
+              align: "center",
+              offset: 0
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              ticks: {
+                color: "#334155",
+                font: {
+                  weight: "bold"
+                }
+              },
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              stacked: true,
+              min: 0,
+              max: 100,
+              title: {
+                display: true,
+                text: "Participación del total combinado (%)",
+                color: "#0f172a",
+                font: {
+                  weight: "bold",
+                  size: 13
+                }
+              },
+              ticks: {
+                color: "#334155",
+                callback(value) {
+                  return value + "%";
+                }
+              },
+              grid: {
+                color: "#cbd5e1"
+              }
+            }
+          }
+        },
+        plugins: [{
+          id: "totalLabelsPlugin",
+          afterDatasetsDraw(chart) {
+            const { ctx, scales: { x, y } } = chart;
+            ctx.save();
+            ctx.fillStyle = "#0f172a";
+            ctx.font = "bold 13px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+
+            const porticoX = x.getPixelForValue(0);
+            const tonchalaX = x.getPixelForValue(1);
+
+            if (composition.plantShare.portico > 0) {
+              const topY = y.getPixelForValue(composition.plantShare.portico) - 8;
+              ctx.fillText(formatPercentValue(composition.plantShare.portico, 1), porticoX, topY);
+            }
+
+            if (composition.plantShare.tonchala > 0) {
+              const topY = y.getPixelForValue(composition.plantShare.tonchala) - 8;
+              ctx.fillText(formatPercentValue(composition.plantShare.tonchala, 1), tonchalaX, topY);
+            }
+
+            ctx.restore();
+          }
+        }]
+      });
+    }
+
+    function renderOperatorDailyChart() {
+      const canvasId = "operatorDailyChart";
+      const canvas = document.getElementById(canvasId);
+      const model = buildOperatorChartModel(rawData, getPlantConfig(), currentMode);
+      const formatter = getChartMetricFormatter(currentMode);
+      const selectedRange = getSelectedRangeConfig();
+      const isMonthlyView = !!model.isMonthlyView;
+
+      destroyOperatorDailyChart();
+
+      operatorDailyChartTitleEl.textContent = isMonthlyView
+        ? "Resultados mensuales"
+        : `Resultados diarios - ${model.monthLabel}`;
+
+      if (model.state === "no-data") {
+        operatorDailyChartSubtitleEl.textContent = `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. ${isMonthlyView ? 'El gráfico ignora el filtro de Día y agrupa por meses del año.' : 'El gráfico ignora el filtro de Día y agrupa por días del mes seleccionado.'}`;
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(canvasId, model.message || "No hay datos válidos para mostrar");
+        return;
+      }
+
+      if (model.state === "not-applicable") {
+        operatorDailyChartSubtitleEl.textContent = `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. ${isMonthlyView ? 'El gráfico ignora el filtro de Día y agrupa por meses del año.' : 'El gráfico ignora el filtro de Día y agrupa por días del mes seleccionado.'}`;
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(canvasId, "No aplica para la planta activa por falta de columnas o datos");
+        return;
+      }
+
+      operatorDailyChartSubtitleEl.textContent = isMonthlyView
+        ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${selectedRange ? selectedRange.label : 'Todos'}. El gráfico ignora el filtro de Día y, cuando Mes = Todos, agrupa por meses del año. Los operadores sin dato aparecen en cero.`
+        : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${selectedRange ? selectedRange.label : 'Todos'}. El gráfico ignora el filtro de Día y los operadores sin dato aparecen en cero.`;
+
+      const yMax = currentMode === "porcentaje"
+        ? 100
+        : (model.maxValue > 0 ? model.maxValue * 1.2 : 1);
+
+      operatorDailyChartInstance = new Chart(canvas, {
+        type: "bar",
+        data: {
+          labels: model.labels,
+          datasets: model.datasets.map(dataset => ({
+            label: dataset.label,
+            data: dataset.data,
+            backgroundColor: dataset.backgroundColor,
+            borderColor: dataset.borderColor,
+            borderWidth: dataset.borderWidth,
+            operatorNames: dataset.operatorNames,
+            barPercentage: 0.92,
+            categoryPercentage: 0.84
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 54,
+              right: 10,
+              bottom: 8,
+              left: 8
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  if (!items.length) return "";
+                  return isMonthlyView ? `Mes ${items[0].label}` : `Día ${items[0].label}`;
+                },
+                label(context) {
+                  const operatorName = context.dataset.operatorNames[context.dataIndex] || "Sin operador";
+                  return `${operatorName}: ${formatter(context.raw)}`;
+                }
+              }
+            },
+            datalabels: {
+              color: "#334155",
+              anchor: "end",
+              align: "end",
+              offset: 2,
+              rotation: -90,
+              clamp: false,
+              clip: false,
+              font: {
+                weight: "bold",
+                size: 10
+              },
+              formatter() {
+                return "";
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: isMonthlyView ? "Meses del año" : "Días del mes",
+                color: "#0f172a",
+                font: {
+                  weight: "bold",
+                  size: 13
+                }
+              },
+              stacked: false,
+              ticks: {
+                color: "#334155",
+                autoSkip: true,
+                maxTicksLimit: isMonthlyView ? 12 : 16
+              },
+              grid: {
+                color: "#e2e8f0"
+              }
+            },
+            y: {
+              beginAtZero: true,
+              max: yMax,
+              title: {
+                display: true,
+                text: getChartMetricAxisLabel(currentMode),
+                color: "#0f172a",
+                font: {
+                  weight: "bold",
+                  size: 13
+                }
+              },
+              ticks: {
+                color: "#334155",
+                callback(value) {
+                  return formatter(value);
+                }
+              },
+              grid: {
+                color: "#cbd5e1"
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderComparisonCharts(dataFiltrada) {
+      const volumenComposition = buildPorticoTonchalaComposition(dataFiltrada, {
+        p1: "Q_Tratada_P1",
+        p2: "Q_Tratada_P2",
+        p3: "Vol_P3",
+        tonchala: "Q_Trat_Tonch"
+      });
+
+      const costoComposition = buildPorticoTonchalaComposition(dataFiltrada, {
+        p1: "Costo_P1",
+        p2: "Costo_P2",
+        p3: "Costo_P3",
+        tonchala: "Costo_Tonchalá"
+      });
+
+      comparisonVolumenChartInstance = renderComparisonChart(
+        "comparisonVolumenChart",
+        comparisonVolumenChartInstance,
+        volumenComposition,
+        "Volumen"
+      );
+
+      comparisonCostoChartInstance = renderComparisonChart(
+        "comparisonCostoChart",
+        comparisonCostoChartInstance,
+        costoComposition,
+        "Costo"
+      );
+    }
+
+    function renderBoxplotChart(canvasId, existingInstance, series, yTitle) {
+      if (existingInstance) {
+        existingInstance.destroy();
+      }
+
+      const hasData = series.some(item => item.values.length > 0);
+
+      if (!hasData) {
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(canvasId, "No hay datos válidos con los filtros seleccionados");
+        return null;
+      }
+
+      const canvas = document.getElementById(canvasId);
+
+      return new Chart(canvas, {
+        type: "boxplot",
+        data: {
+          labels: series.map(item => item.label),
+          datasets: [
+            {
+              label: "Distribución",
+              data: series.map(item => item.values),
+              backgroundColor: series.map(item => item.color),
+              borderColor: series.map(item => item.color),
+              borderWidth: 2,
+              itemRadius: 0,
+              outlierRadius: 2,
+              padding: 12
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            datalabels: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const raw = context.raw || {};
+                  const min = raw.min;
+                  const q1 = raw.q1;
+                  const median = raw.median;
+                  const q3 = raw.q3;
+                  const max = raw.max;
+
+                  const parts = [];
+                  if (min !== undefined) parts.push(`Min: ${formatNumberEs(min, 2)}`);
+                  if (q1 !== undefined) parts.push(`Q1: ${formatNumberEs(q1, 2)}`);
+                  if (median !== undefined) parts.push(`Mediana: ${formatNumberEs(median, 2)}`);
+                  if (q3 !== undefined) parts.push(`Q3: ${formatNumberEs(q3, 2)}`);
+                  if (max !== undefined) parts.push(`Máx: ${formatNumberEs(max, 2)}`);
+
+                  return parts;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: "#334155",
+                font: {
+                  weight: "bold"
+                }
+              },
+              grid: {
+                color: "#e2e8f0"
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: yTitle,
+                color: "#0f172a",
+                font: {
+                  weight: "bold",
+                  size: 13
+                }
+              },
+              ticks: {
+                color: "#334155",
+                callback(value) {
+                  return Number(value).toLocaleString("es-CO", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                  });
+                }
+              },
+              grid: {
+                color: "#cbd5e1"
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderPieChart(canvasId, existingInstance, percentages, counts, tooltipLabelBase) {
+      if (existingInstance) {
+        existingInstance.destroy();
+      }
+
+      const totalValid = counts.reduce((acc, curr) => acc + curr, 0);
+
+      if (totalValid === 0) {
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(canvasId, "No hay datos válidos con los filtros seleccionados");
+        return null;
+      }
+
+      const canvas = document.getElementById(canvasId);
+
+      return new Chart(canvas, {
+        type: "pie",
+        data: {
+          labels: ranges.map(r => r.label),
+          datasets: [
+            {
+              data: percentages,
+              backgroundColor: PIE_COLORS,
+              borderColor: "#ffffff",
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 18,
+              right: 28,
+              bottom: 18,
+              left: 28
+            }
+          },
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                color: "#0f172a",
+                boxWidth: 14,
+                padding: 12,
+                font: {
+                  size: 11
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const pct = context.raw || 0;
+                  const count = counts[context.dataIndex] || 0;
+                  return `${tooltipLabelBase} ${context.label}: ${pct.toFixed(2)}% (${count} registros)`;
+                }
+              }
+            },
+            datalabels: {
+              color: "#0f172a",
+              font: {
+                weight: "bold",
+                size: 10
+              },
+              formatter(value) {
+                if (!value || value <= 0) return "";
+                return `${value.toFixed(2)}%`;
+              },
+              anchor: "end",
+              align: "end",
+              offset: 8,
+              clamp: true,
+              clip: false
+            }
+          }
+        }
+      });
+    }
+
+    function renderAnalysisCharts() {
+      const filteredData = applyDateFilter(rawData);
+
+      const turbiedadP1P2Values = getValidFieldValues(filteredData, "Turbidez_Planta");
+      const turbiedadSP3Values = getValidFieldValues(filteredData, "Turb_P3");
+      const turbiedadTonchalaValues = getValidFieldValues(filteredData, "Turb_Ing_Tonch");
+
+      const m3P1P2Values = getValidFieldValues(filteredData, "$/m3_P1P2");
+      const m3SP3Values = getValidFieldValues(filteredData, "$/m3_SP3");
+      const m3TonchalaValues = getValidFieldValues(filteredData, "$/m3_Tonch");
+
+      const costosQcosP1P2Values = getValidFieldValues(filteredData, "Costo_P1P2");
+      const costosQcosP3Values = getValidFieldValues(filteredData, "Costo_P3");
+      const costosQcosTonchalaValues = getValidFieldValues(filteredData, "Costo_Tonchalá");
+
+      const turbiedadP1P2Dist = getRangeCountsAndPercentages(turbiedadP1P2Values);
+      const turbiedadSP3Dist = getRangeCountsAndPercentages(turbiedadSP3Values);
+      const turbiedadTonchalaDist = getRangeCountsAndPercentages(turbiedadTonchalaValues);
+
+      boxplotTurbiedadChartInstance = renderBoxplotChart(
+        "boxplotTurbiedadChart",
+        boxplotTurbiedadChartInstance,
+        [
+          { label: "P1 y P2", values: turbiedadP1P2Values, color: PLANT_COLORS.p1p2 },
+          { label: "SP3", values: turbiedadSP3Values, color: PLANT_COLORS.sp3 },
+          { label: "Tonchalá", values: turbiedadTonchalaValues, color: PLANT_COLORS.tonchala }
+        ],
+        "Turbiedad (NTU)"
+      );
+
+      boxplotM3ChartInstance = renderBoxplotChart(
+        "boxplotM3Chart",
+        boxplotM3ChartInstance,
+        [
+          { label: "P1 y P2", values: m3P1P2Values, color: PLANT_COLORS.p1p2 },
+          { label: "SP3", values: m3SP3Values, color: PLANT_COLORS.sp3 },
+          { label: "Tonchalá", values: m3TonchalaValues, color: PLANT_COLORS.tonchala }
+        ],
+        "$/m3"
+      );
+
+      boxplotCostosQcosChartInstance = renderBoxplotChart(
+        "boxplotCostosQcosChart",
+        boxplotCostosQcosChartInstance,
+        [
+          { label: "P1 y P2", values: costosQcosP1P2Values, color: PLANT_COLORS.p1p2 },
+          { label: "P3", values: costosQcosP3Values, color: PLANT_COLORS.sp3 },
+          { label: "Tonchalá", values: costosQcosTonchalaValues, color: PLANT_COLORS.tonchala }
+        ],
+        "Costos Qcos"
+      );
+
+      pieTurbiedadP1P2ChartInstance = renderPieChart(
+        "pieTurbiedadP1P2Chart",
+        pieTurbiedadP1P2ChartInstance,
+        turbiedadP1P2Dist.percentages,
+        turbiedadP1P2Dist.counts,
+        "P1 y P2 -"
+      );
+
+      pieTurbiedadSP3ChartInstance = renderPieChart(
+        "pieTurbiedadSP3Chart",
+        pieTurbiedadSP3ChartInstance,
+        turbiedadSP3Dist.percentages,
+        turbiedadSP3Dist.counts,
+        "SP3 -"
+      );
+
+      pieTurbiedadTonchalaChartInstance = renderPieChart(
+        "pieTurbiedadTonchalaChart",
+        pieTurbiedadTonchalaChartInstance,
+        turbiedadTonchalaDist.percentages,
+        turbiedadTonchalaDist.counts,
+        "Tonchalá -"
+      );
+    }
+
+
+    function renderSingleDailyChart(canvasId, instanceName, plantKey, color, titleId, subtitleId, labelText) {
+      const titleEl = document.getElementById(titleId);
+      const subtitleEl = document.getElementById(subtitleId);
+      const chartData = buildDailyTurbiditySeriesByPlant(rawData, plantKey);
+
+      titleEl.textContent = `${labelText} - ${chartData.titleSuffix}`;
+
+      if (instanceName === "p1p2" && dailyP1P2ChartInstance) {
+        dailyP1P2ChartInstance.destroy();
+        dailyP1P2ChartInstance = null;
+      }
+      if (instanceName === "tonchala" && dailyTonchalaChartInstance) {
+        dailyTonchalaChartInstance.destroy();
+        dailyTonchalaChartInstance = null;
+      }
+
+      subtitleEl.textContent = chartData.subtitle || "";
+
+      if (chartData.mode === "empty") {
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(canvasId, "Seleccione un mes o un día");
+        return;
+      }
+
+      if (!chartData.hasData) {
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(
+          canvasId,
+          chartData.mode === "hourly"
+            ? "No hay datos válidos para el día seleccionado"
+            : "No hay datos válidos para el mes seleccionado"
+        );
+        return;
+      }
+
+      const canvas = document.getElementById(canvasId);
+      const validValues = chartData.values.filter(v => v !== null && !isNaN(v));
+      const minValue = Math.min(...validValues);
+      const maxValue = Math.max(...validValues);
+      const padding = minValue === maxValue ? Math.max(1, maxValue * 0.1) : (maxValue - minValue) * 0.1;
+      const yMin = Math.max(0, minValue - padding);
+      const yMax = maxValue + padding;
+
+      const chartInstance = new Chart(canvas, {
+        type: "line",
+        data: {
+          labels: chartData.labels,
+          datasets: [{
+            label: labelText,
+            data: chartData.values,
+            borderColor: color,
+            backgroundColor: color,
+            borderWidth: 3,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointHitRadius: 12,
+            spanGaps: false,
+            tension: 0.2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+              labels: {
+                color: "#0f172a",
+                font: {
+                  size: 12
+                }
+              }
+            },
+            datalabels: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  if (!items.length) return "";
+                  if (chartData.mode === "hourly") {
+                    return `Hora ${items[0].label}`;
+                  }
+                  return `Día ${items[0].label}`;
+                },
+                label(context) {
+                  const value = context.raw;
+                  if (value === null || value === undefined || isNaN(value)) {
+                    return `${labelText}: sin datos`;
+                  }
+                  return `${labelText}: ${Number(value).toLocaleString("es-CO", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })} NTU`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: chartData.xAxisTitle,
+                color: "#0f172a",
+                font: {
+                  weight: "bold",
+                  size: 13
+                }
+              },
+              ticks: {
+                color: "#334155",
+                autoSkip: true,
+                maxTicksLimit: chartData.mode === "hourly" ? 24 : 16
+              },
+              grid: {
+                color: "#e2e8f0"
+              }
+            },
+            y: {
+              min: yMin,
+              max: yMax,
+              title: {
+                display: true,
+                text: chartData.yAxisTitle,
+                color: "#0f172a",
+                font: {
+                  weight: "bold",
+                  size: 13
+                }
+              },
+              ticks: {
+                color: "#334155",
+                callback(value) {
+                  return Number(value).toLocaleString("es-CO", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  });
+                }
+              },
+              grid: {
+                color: "#cbd5e1"
+              }
+            }
+          }
+        }
+      });
+
+      if (instanceName === "p1p2") {
+        dailyP1P2ChartInstance = chartInstance;
+      } else if (instanceName === "tonchala") {
+        dailyTonchalaChartInstance = chartInstance;
+      }
+    }
+
+    function renderDailyTurbidityCharts() {
+
+      renderSingleDailyChart(
+        "dailyChartP1P2",
+        "p1p2",
+        "p1p2",
+        "#0f766e",
+        "dailyTitleP1P2",
+        "dailySubtitleP1P2",
+        "P1 y P2"
+      );
+
+      renderSingleDailyChart(
+        "dailyChartTonchala",
+        "tonchala",
+        "tonchala",
+        "#b45309",
+        "dailyTitleTonchala",
+        "dailySubtitleTonchala",
+        "Tonchalá"
+      );
+    }
+
+    function renderResumenChart(dataFiltrada) {
+      const canvas = document.getElementById("resumenChart");
+      if (!canvas) return;
+
+      const series = CHART_PLANTS.map(plant => ({
+        ...plant,
+        values: getM3SeriesByPlant(dataFiltrada, plant.key)
+      }));
+
+      const allValues = series
+        .flatMap(s => s.values)
+        .filter(v => v !== null && !isNaN(v));
+
+      if (resumenChartInstance) {
+        resumenChartInstance.destroy();
+        resumenChartInstance = null;
+      }
+
+      if (allValues.length === 0) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#64748b";
+        ctx.font = "14px Arial";
+        ctx.fillText("No hay datos válidos para graficar con los filtros seleccionados.", 20, 40);
+        return;
+      }
+
+      const datasets = series.map(plant => ({
+        label: plant.label,
+        data: plant.values,
+        borderColor: plant.color,
+        backgroundColor: plant.color,
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointHitRadius: 12,
+        spanGaps: false,
+        tension: 0
+      }));
+
+      const minValue = Math.min(...allValues);
+      const maxValue = Math.max(...allValues);
+      const padding = minValue === maxValue ? Math.max(1, maxValue * 0.1) : (maxValue - minValue) * 0.1;
+
+      const yMin = Math.max(0, minValue - padding);
+      const yMax = maxValue + padding;
+
+      resumenChartInstance = new Chart(canvas, {
+        type: "line",
+        data: {
+          labels: ranges.map(r => r.label),
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: "nearest",
+            intersect: true
+          },
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                color: "#0f172a",
+                font: {
+                  size: 12
+                }
+              }
+            },
+            datalabels: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  if (!items.length) return "";
+                  return `Rango: ${items[0].label}`;
+                },
+                label(context) {
+                  const value = context.raw;
+                  if (value === null || value === undefined || isNaN(value)) {
+                    return `${context.dataset.label}: sin datos`;
+                  }
+
+                  return `${context.dataset.label}: $ ${Number(value).toLocaleString("es-CO", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Rangos de turbidez",
+                color: "#0f172a",
+                font: {
+                  weight: "bold",
+                  size: 13
+                }
+              },
+              ticks: {
+                color: "#334155",
+                maxRotation: 30,
+                minRotation: 30
+              },
+              grid: {
+                color: "#e2e8f0"
+              }
+            },
+            y: {
+              min: yMin,
+              max: yMax,
+              title: {
+                display: true,
+                text: "$/m3",
+                color: "#0f172a",
+                font: {
+                  weight: "bold",
+                  size: 13
+                }
+              },
+              ticks: {
+                color: "#334155",
+                callback(value) {
+                  return "$ " + Number(value).toLocaleString("es-CO", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  });
+                }
+              },
+              grid: {
+                color: "#cbd5e1"
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderTablaResumen(dataFiltrada) {
+      const plantas = ["p1p2", "sp3", "tonchala"];
+
+      const filas = [
+        { label: "Turbidez (NTU)", key: "turbidez", type: "weighted" },
+        { label: "Dosis (gr/m3)", key: "dosis", type: "weighted" },
+        { label: "Clarificadas (NTU)", key: "clarificadas", type: "weighted" },
+        { label: "Finales (NTU)", key: "finales", type: "weighted" },
+        { label: "Volumen (m3)", key: "caudal", type: "sum" },
+        { label: "$/m3", key: "m3", type: "weighted" }
+      ];
+
+      let html = `
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>P1 y P2</th>
+            <th>SP3</th>
+            <th>TONCHALÁ</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+
+      filas.forEach(fila => {
+        html += `<tr><td>${fila.label}</td>`;
+
+        plantas.forEach(plantKey => {
+          let value = "";
+
+          if (fila.key === "turbidez") {
+            const config = PLANT_CONFIG[plantKey];
+            const entries = [];
+
+            dataFiltrada.forEach(row => {
+              const turbidez = getTurbidezPromedioValue(row, config);
+              const peso = getWeightValue(row, config);
+
+              if (isNaN(turbidez) || isNaN(peso)) return;
+              entries.push({ value: turbidez, weight: peso });
+            });
+
+            value = weightedAverageEntries(entries);
+          } else {
+            value = getUnifiedMetricResult(dataFiltrada, plantKey, fila.key);
+          }
+
+          html += `<td>${formatResumenValue(fila.key, value)}</td>`;
+        });
+
+        html += `</tr>`;
+      });
+
+      if (dataFiltrada.length === 0) {
+        html += `<tr><td colspan="4">No hay datos válidos para mostrar.</td></tr>`;
+      }
+
+      html += `</tbody>`;
+      tablaResumenEl.innerHTML = html;
+    }
+
+
+    function getObjectiveFieldName(mode = currentMode, plantKey = currentPlant) {
+      const objectiveFieldMap = {
+        clarificadas: {
+          p1p2: "Obj_Clar_P1P2",
+          sp3: "Obj_Clar_SP3",
+          tonchala: "Obj_Clar_Tonch"
+        },
+        finales: {
+          p1p2: "Obj_Final_P1P2",
+          sp3: "Obj_Final_SP3",
+          tonchala: "Obj_Final_Tonch"
+        },
+        m3: {
+          p1p2: "Obj_$/m3_P1P2",
+          sp3: "Obj_$/m3_SP3",
+          tonchala: "Obj_$/m3_Tonch"
+        },
+        califFinal: {
+          p1p2: "Obj_Cal_P1P2",
+          sp3: "Obj_Cal_SP3",
+          tonchala: "Obj_Cal_Tonch"
+        }
+      };
+
+      return objectiveFieldMap[mode] ? objectiveFieldMap[mode][plantKey] || "" : "";
+    }
+
+    function getObjectiveValue() {
+      const fieldName = getObjectiveFieldName();
+      if (!fieldName || !rawData.length) return "";
+
+      const monthIso = monthSelectEl ? monthSelectEl.value : "";
+      const sourceData = monthIso
+        ? rawData.filter(row => {
+            const parsed = parseDateString(row[FIELD_FECHA]);
+            return parsed && parsed.isoMonth === monthIso;
+          })
+        : rawData;
+
+      for (const row of sourceData) {
+        const value = toNumber(row[fieldName]);
+        if (!isNaN(value)) return value;
+      }
+
+      return "";
+    }
+
+    function formatObjectiveValue(value) {
+      if (value === "" || value === null || value === undefined || isNaN(value)) return "";
+
+      if (currentMode === "m3") {
+        return `Valor Objetivo: $ ${formatNumberEs(value, 2)}`;
+      }
+
+      if (currentMode === "califFinal") {
+        return `Valor Objetivo: ${formatNumberEs(value, 1)}`;
+      }
+
+      return `Valor Objetivo: ${formatNumberEs(value, 2)}`;
+    }
+
+    function renderObjectiveBand() {
+      if (!objectiveBandEl || !objectiveValueEl) return;
+
+      const value = getObjectiveValue();
+      const formatted = formatObjectiveValue(value);
+
+      if (!formatted) {
+        objectiveBandEl.classList.remove("visible");
+        objectiveValueEl.textContent = "";
+        return;
+      }
+
+      objectiveValueEl.textContent = formatted;
+      objectiveBandEl.classList.add("visible");
+    }
+
+    function updateButtons() {
+      btnDosis.classList.toggle("active", currentMode === "dosis");
+      btnClarificadas.classList.toggle("active", currentMode === "clarificadas");
+      btnFinales.classList.toggle("active", currentMode === "finales");
+      btnCaudal.classList.toggle("active", currentMode === "caudal");
+      btnHoras.classList.toggle("active", currentMode === "horas");
+      btnPorcentaje.classList.toggle("active", currentMode === "porcentaje");
+      btnM3.classList.toggle("active", currentMode === "m3");
+      btnCalifFinal.classList.toggle("active", currentMode === "califFinal");
+
+      btnP1P2.classList.toggle("active", currentPlant === "p1p2");
+      btnSP3.classList.toggle("active", currentPlant === "sp3");
+      btnTonchala.classList.toggle("active", currentPlant === "tonchala");
+
+      const metric = getCurrentMetricLabel();
+      const plant = getCurrentPlantLabel();
+
+      if (currentMode === "caudal" || currentMode === "horas") {
+        metricTitleEl.textContent = `Suma de ${metric} ${plant}`;
+      } else if (currentMode === "porcentaje") {
+        metricTitleEl.textContent = `Porcentaje de datos por intervalo de turbidez ${plant}`;
+      } else {
+        metricTitleEl.textContent = `Promedio de ${metric} ${plant}`;
+      }
+    }
+
+    function clearAllCharts() {
+      if (resumenChartInstance) {
+        resumenChartInstance.destroy();
+        resumenChartInstance = null;
+      }
+      destroyDailyCharts();
+      destroyAnalysisCharts();
+      destroyComparisonCharts();
+      destroyOperatorDailyChart();
+      clearCanvas("resumenChart");
+      clearCanvas("dailyChartP1P2");
+      clearCanvas("dailyChartTonchala");
+      clearCanvas("boxplotTurbiedadChart");
+      clearCanvas("boxplotCostosQcosChart");
+      clearCanvas("boxplotM3Chart");
+      clearCanvas("pieTurbiedadP1P2Chart");
+      clearCanvas("pieTurbiedadSP3Chart");
+      clearCanvas("pieTurbiedadTonchalaChart");
+      clearCanvas("comparisonVolumenChart");
+      clearCanvas("comparisonCostoChart");
+      clearCanvas("operatorDailyChart");
+      if (objectiveBandEl) objectiveBandEl.classList.remove("visible");
+      if (objectiveValueEl) objectiveValueEl.textContent = "";
+    }
+
+    function procesarDatos(data) {
+      rawData = data;
+
+      const plantConfig = getPlantConfig();
+      const mode = currentMode;
+
+      if (!validarCampos(rawData, plantConfig, mode)) {
+        tablaEl.innerHTML = "";
+        tablaMesesEl.innerHTML = "";
+        tablaResumenEl.innerHTML = "";
+        clearAllCharts();
+        return;
+      }
+
+      const filteredData = applyDateFilter(rawData);
+      const allDataForMonthTable = rawData;
+
+      renderTablaResumen(filteredData);
+      renderResumenChart(filteredData);
+      renderDailyTurbidityCharts();
+      renderAnalysisCharts();
+      renderComparisonCharts(filteredData);
+      renderOperatorDailyChart();
+      renderObjectiveBand();
+
+      const avgTurbidityByOperator = buildWeightedTurbidityByField(
+        filteredData,
+        row => row[FIELD_OPERADOR],
+        plantConfig
+      );
+
+      const avgTurbidityByMonth = buildWeightedTurbidityByField(
+        allDataForMonthTable,
+        row => getMonthNameFromRow(row),
+        plantConfig
+      );
+
+      if (mode === "porcentaje") {
+        const matrixOperadores = buildPercentageMatrixByField(
+          filteredData,
+          row => row[FIELD_OPERADOR],
+          plantConfig
+        );
+
+        const matrixMeses = buildPercentageMatrixByField(
+          allDataForMonthTable,
+          row => getMonthNameFromRow(row),
+          plantConfig
+        );
+
+        renderPercentageTableGeneric(tablaEl, matrixOperadores, avgTurbidityByOperator, "Operador", "operator");
+        renderPercentageTableGeneric(tablaMesesEl, matrixMeses, avgTurbidityByMonth, "Mes", "month");
+      } else {
+        const matrixOperadores = buildValueMatrixByField(
+          filteredData,
+          row => row[FIELD_OPERADOR],
+          plantConfig,
+          mode
+        );
+
+        const matrixMeses = buildValueMatrixByField(
+          allDataForMonthTable,
+          row => getMonthNameFromRow(row),
+          plantConfig,
+          mode
+        );
+
+        renderValueTableGeneric(tablaEl, matrixOperadores, avgTurbidityByOperator, "Operador", "operator");
+        renderValueTableGeneric(tablaMesesEl, matrixMeses, avgTurbidityByMonth, "Mes", "month");
+      }
+
+      setStatus(`Dashboard calculado correctamente. Planta activa: ${plantConfig.label}.`, true);
+    }
+
+    async function cargarJsonAutomatico() {
+      try {
+        setStatus(`Intentando cargar automáticamente ${AUTO_JSON_FILE}...`);
+
+        const response = await fetch(AUTO_JSON_FILE, { cache: "no-store" });
+
+        if (!response.ok) {
+          throw new Error(`No se pudo cargar ${AUTO_JSON_FILE} (HTTP ${response.status})`);
+        }
+
+        const data = await response.json();
+
+        rawData = data;
+
+        fillSelectors(rawData);
+        procesarDatos(rawData);
+      } catch (error) {
+        tablaEl.innerHTML = "";
+        tablaMesesEl.innerHTML = "";
+        tablaResumenEl.innerHTML = "";
+        clearAllCharts();
+        setStatus(
+          `No fue posible cargar automáticamente ${AUTO_JSON_FILE}.\n` +
+          `Verifica que el archivo esté en la misma carpeta del HTML y que estés abriendo la página desde un servidor local.\n` +
+          `También puedes cargarlo manualmente con el selector.`
+        );
+      }
+    }
+
+    fileInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function(evt) {
+        try {
+          const data = JSON.parse(evt.target.result);
+          rawData = data;
+
+          fillSelectors(rawData);
+          procesarDatos(rawData);
+        } catch (error) {
+          tablaEl.innerHTML = "";
+          tablaMesesEl.innerHTML = "";
+          tablaResumenEl.innerHTML = "";
+          clearAllCharts();
+          setStatus("El archivo cargado no es un JSON válido.");
+        }
+      };
+
+      reader.readAsText(file, "utf-8");
+    });
+
+    btnDosis.addEventListener("click", () => {
+      currentMode = "dosis";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnClarificadas.addEventListener("click", () => {
+      currentMode = "clarificadas";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnFinales.addEventListener("click", () => {
+      currentMode = "finales";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnCaudal.addEventListener("click", () => {
+      currentMode = "caudal";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnHoras.addEventListener("click", () => {
+      currentMode = "horas";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnPorcentaje.addEventListener("click", () => {
+      currentMode = "porcentaje";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnM3.addEventListener("click", () => {
+      currentMode = "m3";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnCalifFinal.addEventListener("click", () => {
+      currentMode = "califFinal";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnP1P2.addEventListener("click", () => {
+      currentPlant = "p1p2";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnSP3.addEventListener("click", () => {
+      currentPlant = "sp3";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    btnTonchala.addEventListener("click", () => {
+      currentPlant = "tonchala";
+      updateButtons();
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    monthSelectEl.addEventListener("change", () => {
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    daySelectEl.addEventListener("change", () => {
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    intervalSelectEl.addEventListener("change", () => {
+      if (rawData.length > 0) procesarDatos(rawData);
+    });
+
+    fillIntervalSelector();
+    updateButtons();
+    cargarJsonAutomatico();
+  </script>
+</body>
+</html>
