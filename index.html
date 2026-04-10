@@ -1483,7 +1483,11 @@
       return true;
     }
 
-    function fillSelectors(data) {
+    function fillSelectors(data, options = {}) {
+      const {
+        autoSelectFirstDay = false
+      } = options;
+
       const months = new Map();
       const days = new Set();
 
@@ -1521,7 +1525,15 @@
           .join("");
 
       if (selectedMonth) monthSelectEl.value = selectedMonth;
-      if (selectedDay) daySelectEl.value = selectedDay;
+      if (selectedDay) {
+        daySelectEl.value = selectedDay;
+      }
+
+      const hasSelectedDay = daySelectEl.value && Array.from(daySelectEl.options).some(option => option.value === daySelectEl.value);
+      if (autoSelectFirstDay && !hasSelectedDay) {
+        const firstAvailableDay = Array.from(daySelectEl.options).find(option => option.value);
+        daySelectEl.value = firstAvailableDay ? firstAvailableDay.value : "";
+      }
     }
 
     function applyDateFilter(data) {
@@ -3619,7 +3631,7 @@
 
         rawData = data;
 
-        fillSelectors(rawData);
+        fillSelectors(rawData, { autoSelectFirstDay: true });
         procesarDatos(rawData);
       } catch (error) {
         tablaEl.innerHTML = "";
@@ -3645,7 +3657,7 @@
           const data = JSON.parse(evt.target.result);
           rawData = data;
 
-          fillSelectors(rawData);
+          fillSelectors(rawData, { autoSelectFirstDay: true });
           procesarDatos(rawData);
         } catch (error) {
           tablaEl.innerHTML = "";
