@@ -1483,7 +1483,11 @@
       return true;
     }
 
-    function fillSelectors(data) {
+    function fillSelectors(data, options = {}) {
+      const {
+        forceFirstAvailableDay = false
+      } = options;
+
       const months = new Map();
       const days = new Set();
 
@@ -1502,6 +1506,9 @@
       const selectedMonth = monthSelectEl.value;
       const selectedDay = daySelectEl.value;
 
+      const sortedDays = Array.from(days).sort((a, b) => b.localeCompare(a));
+      const firstAvailableDay = sortedDays.length ? sortedDays[0] : "";
+
       monthSelectEl.innerHTML =
         '<option value="">Todos</option>' +
         Array.from(months.entries())
@@ -1511,8 +1518,7 @@
 
       daySelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        Array.from(days)
-          .sort((a, b) => b.localeCompare(a))
+        sortedDays
           .map(day => {
             const [year, month, d] = day.split("-");
             const formatted = `${d}/${month}/${year}`;
@@ -1520,8 +1526,17 @@
           })
           .join("");
 
-      if (selectedMonth) monthSelectEl.value = selectedMonth;
-      if (selectedDay) daySelectEl.value = selectedDay;
+      if (selectedMonth) {
+        monthSelectEl.value = selectedMonth;
+      }
+
+      if (forceFirstAvailableDay) {
+        daySelectEl.value = firstAvailableDay;
+      } else if (selectedDay && sortedDays.includes(selectedDay)) {
+        daySelectEl.value = selectedDay;
+      } else {
+        daySelectEl.value = "";
+      }
     }
 
     function applyDateFilter(data) {
@@ -3619,7 +3634,7 @@
 
         rawData = data;
 
-        fillSelectors(rawData);
+        fillSelectors(rawData, { forceFirstAvailableDay: true });
         procesarDatos(rawData);
       } catch (error) {
         tablaEl.innerHTML = "";
@@ -3645,7 +3660,7 @@
           const data = JSON.parse(evt.target.result);
           rawData = data;
 
-          fillSelectors(rawData);
+          fillSelectors(rawData, { forceFirstAvailableDay: true });
           procesarDatos(rawData);
         } catch (error) {
           tablaEl.innerHTML = "";
