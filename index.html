@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Dashboard Operativo P1P2, SP3, Tonchalá</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,7 +14,14 @@
       background: #f5f7fa;
       color: #1f2937;
     }
+  </style>
+</head>
 
+<body>
+
+  <div style="background: yellow; padding: 8px; font-weight: bold;">
+    VERSION PRUEBA 08
+  </div>
     h1 {
       margin-bottom: 8px;
     }
@@ -658,6 +668,13 @@
   </style>
 </head>
 <body>
+
+<div style="position:fixed; top:10px; right:10px; background:white; padding:10px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.2); z-index:9999;">
+  <button onclick="netlifyIdentity.open()">Login</button>
+  <button onclick="netlifyIdentity.logout()">Logout</button>
+  <div id="userStatus">No logueado</div>
+</div>
+
   <h1>Dashboard Operativo P1P2, SP3, Tonchalá</h1>
   <div class="sub">Promedios, sumas y porcentajes por operador y por mes según rangos de turbidez</div>
 
@@ -705,10 +722,10 @@
     </div>
 
     <div id="metricTitle" class="metric-title">Promedio de Dosis P1 y P2</div>
-    <div id="status" class="msg">Intentando cargar automáticamente dashboard_data.json...</div>
+    <div id="status" class="msg">Cargando datos protegidos...</div>
 
     <div class="hint-box">
-      Si la carga automática falla, todavía puedes cargar el JSON manualmente con el selector de archivo.
+      Si la carga protegida falla, todavía puedes cargar el JSON manualmente con el selector de archivo.
     </div>
 
     <div class="section-title">Tabla por operador</div>
@@ -869,6 +886,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.5/build/index.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
   <script>
     let rawData = [];
@@ -1499,20 +1517,24 @@
         days.add(parsed.isoDay);
       });
 
-      const selectedMonth = monthSelectEl.value;
-      const selectedDay = daySelectEl.value;
+      const previousMonth = monthSelectEl.value;
+      const previousDay = daySelectEl.value;
+
+      const sortedMonths = Array.from(months.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]));
+
+      const sortedDays = Array.from(days)
+        .sort((a, b) => b.localeCompare(a));
 
       monthSelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        Array.from(months.entries())
-          .sort((a, b) => a[0].localeCompare(b[0]))
+        sortedMonths
           .map(([value, label]) => `<option value="${value}">${label}</option>`)
           .join("");
 
       daySelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        Array.from(days)
-          .sort((a, b) => b.localeCompare(a))
+        sortedDays
           .map(day => {
             const [year, month, d] = day.split("-");
             const formatted = `${d}/${month}/${year}`;
@@ -1520,8 +1542,13 @@
           })
           .join("");
 
-      if (selectedMonth) monthSelectEl.value = selectedMonth;
-      if (selectedDay) daySelectEl.value = selectedDay;
+      monthSelectEl.value = sortedMonths.some(([value]) => value === previousMonth) ? previousMonth : "";
+
+      if (sortedDays.some(day => day === previousDay)) {
+        daySelectEl.value = previousDay;
+      } else {
+        daySelectEl.value = sortedDays.length ? sortedDays[0] : "";
+      }
     }
 
     function applyDateFilter(data) {
@@ -3607,18 +3634,31 @@
 
     async function cargarJsonAutomatico() {
       try {
-        setStatus(`Intentando cargar automáticamente ${AUTO_JSON_FILE}...`);
+        setStatus("Cargando datos protegidos...");
 
-        const response = await fetch(AUTO_JSON_FILE, { cache: "no-store" });
+        const user = netlifyIdentity.currentUser();
+
+        if (!user) {
+          setStatus("Debes iniciar sesión para ver el dashboard.");
+          return;
+        }
+
+        const token = await user.jwt();
+
+        const response = await fetch("/.netlify/functions/dashboard-data", {
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
 
         if (!response.ok) {
-          throw new Error(`No se pudo cargar ${AUTO_JSON_FILE} (HTTP ${response.status})`);
+          throw new Error(`No se pudieron cargar los datos protegidos (HTTP ${response.status})`);
         }
 
         const data = await response.json();
 
         rawData = data;
-
         fillSelectors(rawData);
         procesarDatos(rawData);
       } catch (error) {
@@ -3627,11 +3667,64 @@
         tablaResumenEl.innerHTML = "";
         clearAllCharts();
         setStatus(
-          `No fue posible cargar automáticamente ${AUTO_JSON_FILE}.\n` +
-          `Verifica que el archivo esté en la misma carpeta del HTML y que estés abriendo la página desde un servidor local.\n` +
-          `También puedes cargarlo manualmente con el selector.`
+          "No fue posible cargar los datos protegidos.\n" +
+          "Verifica que hayas iniciado sesión y que la función /.netlify/functions/dashboard-data esté desplegada.\n" +
+          "También puedes cargar el JSON manualmente con el selector."
         );
+        console.error(error);
       }
+    }
+
+function updateUserStatus(user) {
+      const userStatusEl = document.getElementById("userStatus");
+      if (!userStatusEl) return;
+      userStatusEl.innerText = user ? (user.email || "Logueado") : "No logueado";
+      console.log("ESTADO USER:", user);
+    }
+
+    if (window.netlifyIdentity) {
+      netlifyIdentity.on("init", user => {
+        console.log("EVENTO init:", user);
+        updateUserStatus(user);
+
+        if (user) {
+          cargarJsonAutomatico();
+        } else {
+          setStatus("Debes iniciar sesión para ver el dashboard.");
+        }
+      });
+
+      netlifyIdentity.on("login", user => {
+        console.log("EVENTO login:", user);
+        updateUserStatus(user);
+        netlifyIdentity.close();
+
+        setTimeout(() => {
+          const current = netlifyIdentity.currentUser();
+          console.log("CURRENT USER DESPUES LOGIN:", current);
+
+          if (current) {
+            cargarJsonAutomatico();
+          } else {
+            setStatus("El login ocurrió, pero no quedó sesión activa.");
+          }
+        }, 1500);
+      });
+
+      netlifyIdentity.on("logout", () => {
+        console.log("EVENTO logout");
+        updateUserStatus(null);
+        rawData = [];
+        tablaEl.innerHTML = "";
+        tablaMesesEl.innerHTML = "";
+        tablaResumenEl.innerHTML = "";
+        clearAllCharts();
+        setStatus("Debes iniciar sesión para ver el dashboard.");
+      });
+
+      netlifyIdentity.init();
+    } else {
+      setStatus("No fue posible cargar Netlify Identity.");
     }
 
     fileInput.addEventListener("change", e => {
@@ -3739,7 +3832,9 @@
 
     fillIntervalSelector();
     updateButtons();
-    cargarJsonAutomatico();
   </script>
 </body>
+<div style="background: yellow; padding: 8px; font-weight: bold;">
+  VERSION PRUEBA 08
+</div>
 </html>
