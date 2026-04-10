@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Dashboard Operativo P1P2, SP3, Tonchalá</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,7 +14,14 @@
       background: #f5f7fa;
       color: #1f2937;
     }
+  </style>
+</head>
 
+<body>
+
+  <div style="background: yellow; padding: 8px; font-weight: bold;">
+    VERSION PRUEBA 08
+  </div>
     h1 {
       margin-bottom: 8px;
     }
@@ -1507,20 +1517,24 @@
         days.add(parsed.isoDay);
       });
 
-      const selectedMonth = monthSelectEl.value;
-      const selectedDay = daySelectEl.value;
+      const previousMonth = monthSelectEl.value;
+      const previousDay = daySelectEl.value;
+
+      const sortedMonths = Array.from(months.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]));
+
+      const sortedDays = Array.from(days)
+        .sort((a, b) => b.localeCompare(a));
 
       monthSelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        Array.from(months.entries())
-          .sort((a, b) => a[0].localeCompare(b[0]))
+        sortedMonths
           .map(([value, label]) => `<option value="${value}">${label}</option>`)
           .join("");
 
       daySelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        Array.from(days)
-          .sort((a, b) => b.localeCompare(a))
+        sortedDays
           .map(day => {
             const [year, month, d] = day.split("-");
             const formatted = `${d}/${month}/${year}`;
@@ -1528,8 +1542,13 @@
           })
           .join("");
 
-      if (selectedMonth) monthSelectEl.value = selectedMonth;
-      if (selectedDay) daySelectEl.value = selectedDay;
+      monthSelectEl.value = sortedMonths.some(([value]) => value === previousMonth) ? previousMonth : "";
+
+      if (sortedDays.some(day => day === previousDay)) {
+        daySelectEl.value = previousDay;
+      } else {
+        daySelectEl.value = sortedDays.length ? sortedDays[0] : "";
+      }
     }
 
     function applyDateFilter(data) {
@@ -3815,4 +3834,7 @@ function updateUserStatus(user) {
     updateButtons();
   </script>
 </body>
+<div style="background: yellow; padding: 8px; font-weight: bold;">
+  VERSION PRUEBA 08
+</div>
 </html>
