@@ -428,17 +428,22 @@
       display: block;
     }
 
+
+    .costos-qcos-chart-row {
+      width: 100%;
+      margin: 6px 0 18px;
+    }
+
     .costos-qcos-chart-card {
       position: relative;
       width: 100%;
-      min-height: 430px;
+      min-height: 420px;
       border: 1px solid #dbe2ea;
       border-radius: 12px;
       background: white;
       padding: 14px;
       box-sizing: border-box;
       overflow: hidden;
-      margin-bottom: 4px;
     }
 
     .costos-qcos-chart-title {
@@ -458,7 +463,7 @@
 
     .costos-qcos-chart-canvas {
       width: 100% !important;
-      height: 320px !important;
+      height: 300px !important;
       display: block;
     }
 
@@ -861,14 +866,16 @@
 
     <div class="subsection-title">Costos Qcos por intervalos de turbidez</div>
     <div class="table-note">
-      Este gráfico de barras responde solo a los filtros de Mes y Día. Muestra la suma de Costos Qcos por rango de turbidez para P1 y P2, SP3 y Tonchalá.
+      Este gráfico de barras responde únicamente a los filtros de Mes y Día. Cada grupo corresponde a un rango de turbidez y muestra la suma de Costos Qcos por planta.
     </div>
-    <div class="costos-qcos-chart-card">
-      <div class="costos-qcos-chart-title" id="costosQcosIntervalosTitle">Costo anual según intervalos de turbidez</div>
-      <div class="costos-qcos-chart-subtitle" id="costosQcosIntervalosSubtitle">
-        Cuando Mes = Todos y Día = Todos, el gráfico representa el costo anual. Si el día no pertenece al mes seleccionado, no se grafica y se muestra un mensaje.
+    <div class="costos-qcos-chart-row">
+      <div class="costos-qcos-chart-card">
+        <div class="costos-qcos-chart-title" id="costosQcosIntervalTitle">Costo anual según intervalos de turbidez</div>
+        <div class="costos-qcos-chart-subtitle" id="costosQcosIntervalSubtitle">
+          Cuando Mes = Todos y Día = Todos, el gráfico muestra el costo anual consolidado por rangos de turbidez.
+        </div>
+        <canvas id="costosQcosIntervalChart" class="costos-qcos-chart-canvas"></canvas>
       </div>
-      <canvas id="costosQcosIntervalosChart" class="costos-qcos-chart-canvas"></canvas>
     </div>
 
     <div class="subsection-title">Franja comparativa de composición porcentual</div>
@@ -929,9 +936,9 @@
     let pieTurbiedadP1P2ChartInstance = null;
     let pieTurbiedadSP3ChartInstance = null;
     let pieTurbiedadTonchalaChartInstance = null;
+    let costosQcosIntervalChartInstance = null;
     let comparisonVolumenChartInstance = null;
     let comparisonCostoChartInstance = null;
-    let costosQcosIntervalosChartInstance = null;
     let operatorDailyChartInstance = null;
 
     const AUTO_JSON_FILE = "data.json";
@@ -2312,6 +2319,11 @@
         pieTurbiedadTonchalaChartInstance.destroy();
         pieTurbiedadTonchalaChartInstance = null;
       }
+
+      if (costosQcosIntervalChartInstance) {
+        costosQcosIntervalChartInstance.destroy();
+        costosQcosIntervalChartInstance = null;
+      }
     }
 
     function destroyComparisonCharts() {
@@ -2323,11 +2335,6 @@
       if (comparisonCostoChartInstance) {
         comparisonCostoChartInstance.destroy();
         comparisonCostoChartInstance = null;
-      }
-
-      if (costosQcosIntervalosChartInstance) {
-        costosQcosIntervalosChartInstance.destroy();
-        costosQcosIntervalosChartInstance = null;
       }
     }
 
@@ -2790,140 +2797,142 @@
       });
     }
 
-    function getMonthDayCompatibilityState() {
+    function getFilteredDataForCostosQcosChart(data) {
       const selectedMonth = monthSelectEl.value;
       const selectedDay = daySelectEl.value;
 
-      if (!selectedMonth || !selectedDay) {
-        return { valid: true, reason: "" };
+      if (selectedMonth && selectedDay) {
+        const parsedDay = parseDateString(selectedDay);
+        if (!parsedDay || parsedDay.isoMonth !== selectedMonth) {
+          return {
+            valid: false,
+            data: [],
+            message: "El día seleccionado no pertenece al mes seleccionado"
+          };
+        }
       }
 
-      const parsedDay = parseDateString(selectedDay);
-      if (!parsedDay) {
-        return { valid: false, reason: "El día seleccionado no pertenece al mes seleccionado" };
-      }
-
-      if (parsedDay.isoMonth !== selectedMonth) {
-        return { valid: false, reason: "El día seleccionado no pertenece al mes seleccionado" };
-      }
-
-      return { valid: true, reason: "" };
+      return {
+        valid: true,
+        data: applyDateFilter(data),
+        message: ""
+      };
     }
 
-    function getCostosQcosChartContextLabel() {
+    function getCostosQcosChartContextText() {
       const selectedMonth = monthSelectEl.value;
       const selectedDay = daySelectEl.value;
-      const compatibility = getMonthDayCompatibilityState();
-
-      if (!compatibility.valid) {
-        return {
-          valid: false,
-          title: "Costos Qcos según intervalos de turbidez",
-          subtitle: compatibility.reason
-        };
-      }
 
       if (!selectedMonth && !selectedDay) {
         return {
-          valid: true,
           title: "Costo anual según intervalos de turbidez",
-          subtitle: "Se muestran las sumas anuales de Costos Qcos por rango de turbidez para las diferentes plantas."
+          subtitle: "Se muestran los costos anuales consolidados por rangos de turbidez para P1 y P2, SP3 y Tonchalá."
         };
       }
 
       if (!selectedMonth && selectedDay) {
         const [year, month, day] = selectedDay.split("-");
         return {
-          valid: true,
           title: `Costo del día ${day}/${month}/${year} según intervalos de turbidez`,
-          subtitle: `Se muestran las sumas de Costos Qcos del día ${day}/${month}/${year} por rango de turbidez para las diferentes plantas.`
+          subtitle: "Se muestran los costos de la fecha seleccionada agrupados por rangos de turbidez para cada planta."
         };
       }
 
       if (selectedMonth && !selectedDay) {
-        const monthLabel = getMonthLabelFromIso(selectedMonth);
         return {
-          valid: true,
-          title: `Costo del mes de ${monthLabel} según intervalos de turbidez`,
-          subtitle: `Se muestran las sumas de Costos Qcos del mes de ${monthLabel} por rango de turbidez para las diferentes plantas.`
+          title: `Costo del mes de ${getMonthLabelFromIso(selectedMonth)} según intervalos de turbidez`,
+          subtitle: "Se muestran los costos del mes seleccionado agrupados por rangos de turbidez para cada planta."
         };
       }
 
       const [year, month, day] = selectedDay.split("-");
       return {
-        valid: true,
         title: `Costo del día ${day}/${month}/${year} según intervalos de turbidez`,
-        subtitle: `Se muestran las sumas de Costos Qcos del día ${day}/${month}/${year} por rango de turbidez para las diferentes plantas.`
+        subtitle: `Se muestran los costos del día seleccionado dentro del mes ${getMonthLabelFromIso(selectedMonth)} agrupados por rangos de turbidez para cada planta.`
       };
     }
 
-    function buildCostosQcosSeriesByPlant(data, plantKey) {
-      const costFieldMap = {
-        p1p2: "Costo_P1P2",
-        sp3: "Costo_P3",
-        tonchala: "Costo_Tonchalá"
-      };
-
+    function getCostosQcosSeriesByPlant(data, plantKey, costField) {
       const config = PLANT_CONFIG[plantKey];
-      const fieldName = costFieldMap[plantKey];
 
       return ranges.map(range => {
-        let sum = 0;
-
-        data.forEach(row => {
+        return data.reduce((acc, row) => {
           const turbidez = getTurbidezPromedioValue(row, config);
-          const costo = toNumber(row[fieldName]);
+          const costo = toNumber(row[costField]);
 
-          if (isNaN(turbidez) || isNaN(costo)) return;
-          if (!range.test(turbidez)) return;
+          if (isNaN(turbidez) || isNaN(costo)) return acc;
+          if (!range.test(turbidez)) return acc;
 
-          sum += costo;
-        });
-
-        return sum;
+          return acc + costo;
+        }, 0);
       });
     }
 
-    function renderCostosQcosIntervalosChart() {
-      const titleEl = document.getElementById("costosQcosIntervalosTitle");
-      const subtitleEl = document.getElementById("costosQcosIntervalosSubtitle");
-      const canvasId = "costosQcosIntervalosChart";
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
+    function renderCostosQcosIntervalChart(data) {
+      const canvas = document.getElementById("costosQcosIntervalChart");
+      const titleEl = document.getElementById("costosQcosIntervalTitle");
+      const subtitleEl = document.getElementById("costosQcosIntervalSubtitle");
+      if (!canvas || !titleEl || !subtitleEl) return;
 
-      const contextInfo = getCostosQcosChartContextLabel();
-      titleEl.textContent = contextInfo.title;
-      subtitleEl.textContent = contextInfo.subtitle;
+      const contextText = getCostosQcosChartContextText();
+      titleEl.textContent = contextText.title;
+      subtitleEl.textContent = contextText.subtitle;
 
-      if (costosQcosIntervalosChartInstance) {
-        costosQcosIntervalosChartInstance.destroy();
-        costosQcosIntervalosChartInstance = null;
+      if (costosQcosIntervalChartInstance) {
+        costosQcosIntervalChartInstance.destroy();
+        costosQcosIntervalChartInstance = null;
       }
 
-      if (!contextInfo.valid) {
-        clearCanvas(canvasId);
-        drawEmptyMessageOnCanvas(canvasId, "El día seleccionado no pertenece al mes seleccionado");
+      const filteredResult = getFilteredDataForCostosQcosChart(data);
+      if (!filteredResult.valid) {
+        clearCanvas("costosQcosIntervalChart");
+        subtitleEl.textContent = filteredResult.message;
+        drawEmptyMessageOnCanvas("costosQcosIntervalChart", filteredResult.message);
         return;
       }
 
-      const filteredData = applyDateFilter(rawData);
-      const datasets = CHART_PLANTS.map(plant => ({
-        label: plant.label,
-        data: buildCostosQcosSeriesByPlant(filteredData, plant.key),
-        backgroundColor: plant.color,
-        borderColor: plant.color,
-        borderWidth: 1
-      }));
+      const filteredData = filteredResult.data;
+      const series = [
+        {
+          label: "P1 y P2",
+          color: PLANT_COLORS.p1p2,
+          data: getCostosQcosSeriesByPlant(filteredData, "p1p2", "Costo_P1P2")
+        },
+        {
+          label: "SP3",
+          color: PLANT_COLORS.sp3,
+          data: getCostosQcosSeriesByPlant(filteredData, "sp3", "Costo_P3")
+        },
+        {
+          label: "Tonchalá",
+          color: PLANT_COLORS.tonchala,
+          data: getCostosQcosSeriesByPlant(filteredData, "tonchala", "Costo_Tonchalá")
+        }
+      ];
 
-      const allValues = datasets.flatMap(dataset => dataset.data).filter(value => !isNaN(value));
-      const maxValue = allValues.length ? Math.max(...allValues) : 0;
-      const yMax = maxValue > 0 ? maxValue * 1.15 : 1;
+      const allValues = series.flatMap(item => item.data).filter(value => !isNaN(value));
+      const hasPositiveData = allValues.some(value => value > 0);
 
-      costosQcosIntervalosChartInstance = new Chart(canvas, {
+      if (!hasPositiveData) {
+        clearCanvas("costosQcosIntervalChart");
+        drawEmptyMessageOnCanvas("costosQcosIntervalChart", "No hay datos válidos con los filtros seleccionados");
+        return;
+      }
+
+      costosQcosIntervalChartInstance = new Chart(canvas, {
         type: "bar",
         data: {
           labels: ranges.map(r => r.label),
-          datasets
+          datasets: series.map(item => ({
+            label: item.label,
+            data: item.data,
+            backgroundColor: item.color,
+            borderColor: item.color,
+            borderWidth: 1,
+            borderRadius: 4,
+            barPercentage: 0.82,
+            categoryPercentage: 0.72
+          }))
         },
         options: {
           responsive: true,
@@ -2942,6 +2951,9 @@
                 }
               }
             },
+            datalabels: {
+              display: false
+            },
             tooltip: {
               callbacks: {
                 title(items) {
@@ -2950,23 +2962,8 @@
                 },
                 label(context) {
                   const value = context.raw || 0;
-                  return `${context.dataset.label}: ${formatNumberEs(value, 2)}`;
+                  return `${context.dataset.label}: ${formatIntegerEs(value)}`;
                 }
-              }
-            },
-            datalabels: {
-              color: "#334155",
-              anchor: "end",
-              align: "end",
-              offset: 2,
-              clamp: true,
-              clip: false,
-              font: {
-                weight: "bold",
-                size: 10
-              },
-              formatter(value) {
-                return formatNumberEs(value, 0);
               }
             }
           },
@@ -2992,7 +2989,6 @@
             },
             y: {
               beginAtZero: true,
-              max: yMax,
               title: {
                 display: true,
                 text: "Costos Qcos",
@@ -3005,7 +3001,7 @@
               ticks: {
                 color: "#334155",
                 callback(value) {
-                  return formatNumberEs(value, 0);
+                  return formatIntegerEs(value);
                 }
               },
               grid: {
@@ -3818,9 +3814,9 @@
       clearCanvas("pieTurbiedadP1P2Chart");
       clearCanvas("pieTurbiedadSP3Chart");
       clearCanvas("pieTurbiedadTonchalaChart");
+      clearCanvas("costosQcosIntervalChart");
       clearCanvas("comparisonVolumenChart");
       clearCanvas("comparisonCostoChart");
-      clearCanvas("costosQcosIntervalosChart");
       clearCanvas("operatorDailyChart");
       if (objectiveBandEl) objectiveBandEl.classList.remove("visible");
       if (objectiveValueEl) objectiveValueEl.textContent = "";
@@ -3847,7 +3843,7 @@
       renderResumenChart(filteredData);
       renderDailyTurbidityCharts();
       renderAnalysisCharts();
-      renderCostosQcosIntervalosChart();
+      renderCostosQcosIntervalChart(rawData);
       renderComparisonCharts(filteredData);
       renderOperatorDailyChart();
       renderObjectiveBand();
