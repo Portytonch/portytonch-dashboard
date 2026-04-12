@@ -471,6 +471,46 @@
       display: block;
     }
 
+    .coagulante-interval-chart-card {
+      position: relative;
+      width: 100%;
+      min-height: 420px;
+      border: 1px solid #dbe2ea;
+      border-radius: 12px;
+      background: white;
+      padding: 14px;
+      box-sizing: border-box;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .coagulante-interval-chart-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .coagulante-interval-chart-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 10px;
+      line-height: 1.4;
+      min-height: 34px;
+    }
+
+    .coagulante-interval-chart-canvas-wrap {
+      position: relative;
+      width: 100%;
+      min-height: 320px;
+      height: 320px;
+    }
+
+    .coagulante-interval-chart-canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
 
     .interval-group {
       display: flex;
@@ -822,6 +862,18 @@
       </div>
     </div>
 
+    <div class="subsection-title">Kg de coagulante según intervalos de turbidez</div>
+    <div class="table-note">
+      Este gráfico responde únicamente a los filtros de Mes y Día. Cada rango de turbidez muestra tres barras: P1 y P2, SP3 y Tonchalá. Cuando no hay datos, la barra se muestra en 0. Si el día seleccionado no pertenece al mes seleccionado, se muestra un mensaje dentro del gráfico.
+    </div>
+    <div class="coagulante-interval-chart-card">
+      <div class="coagulante-interval-chart-title" id="coagulanteIntervalChartTitle">Kg de coagulante anual según intervalos de turbidez</div>
+      <div class="coagulante-interval-chart-subtitle" id="coagulanteIntervalChartSubtitle">Seleccione Mes y Día para actualizar el gráfico.</div>
+      <div class="coagulante-interval-chart-canvas-wrap">
+        <canvas id="coagulanteIntervalChart" class="coagulante-interval-chart-canvas"></canvas>
+      </div>
+    </div>
+
     <div class="subsection-title">Franja comparativa de composición porcentual</div>
     <div class="table-note">
       Estos dos gráficos responden a los filtros de Mes y Día. Cada barra representa el 100% de la planta seleccionada y muestra la composición interna de Pórtico frente a Tonchalá.
@@ -882,6 +934,7 @@
     let pieTurbiedadTonchalaChartInstance = null;
     let comparisonVolumenChartInstance = null;
     let comparisonCostoChartInstance = null;
+    let coagulanteIntervalChartInstance = null;
     let operatorDailyChartInstance = null;
 
     const AUTO_JSON_FILE = "data.json";
@@ -1007,6 +1060,8 @@
     const intervalSelectEl = document.getElementById("intervalSelect");
     const operatorDailyChartTitleEl = document.getElementById("operatorDailyChartTitle");
     const operatorDailyChartSubtitleEl = document.getElementById("operatorDailyChartSubtitle");
+    const coagulanteIntervalChartTitleEl = document.getElementById("coagulanteIntervalChartTitle");
+    const coagulanteIntervalChartSubtitleEl = document.getElementById("coagulanteIntervalChartSubtitle");
     const objectiveBandEl = document.getElementById("objectiveBand");
     const objectiveValueEl = document.getElementById("objectiveValue");
 
@@ -2247,6 +2302,13 @@
       }
     }
 
+    function destroyCoagulanteIntervalChart() {
+      if (coagulanteIntervalChartInstance) {
+        coagulanteIntervalChartInstance.destroy();
+        coagulanteIntervalChartInstance = null;
+      }
+    }
+
     function destroyOperatorDailyChart() {
       if (operatorDailyChartInstance) {
         operatorDailyChartInstance.destroy();
@@ -2302,6 +2364,202 @@
         const value = toNumber(row[fieldName]);
         return isNaN(value) ? acc : acc + value;
       }, 0);
+    }
+
+    function isMonthDaySelectionValid() {
+      const selectedMonth = monthSelectEl.value;
+      const selectedDay = daySelectEl.value;
+
+      if (!selectedMonth || !selectedDay) return true;
+      return selectedDay.slice(0, 7) === selectedMonth;
+    }
+
+    function getCoagulanteChartContext() {
+      const selectedMonth = monthSelectEl.value;
+      const selectedDay = daySelectEl.value;
+
+      if (selectedMonth && selectedDay && selectedDay.slice(0, 7) !== selectedMonth) {
+        return {
+          valid: false,
+          title: "Kg de coagulante según intervalos de turbidez",
+          subtitle: "El día seleccionado no pertenece al mes seleccionado.",
+          message: "El día seleccionado no pertenece al mes seleccionado"
+        };
+      }
+
+      if (!selectedMonth && !selectedDay) {
+        return {
+          valid: true,
+          title: "Kg de coagulante anual según intervalos de turbidez",
+          subtitle: "Suma anual de Kg de Coagulante por rango de turbidez para P1 y P2, SP3 y Tonchalá."
+        };
+      }
+
+      if (!selectedMonth && selectedDay) {
+        const [year, month, day] = selectedDay.split('-');
+        return {
+          valid: true,
+          title: `Kg de coagulante del día ${day}/${month}/${year} según intervalos de turbidez`,
+          subtitle: "Suma de Kg de Coagulante de la fecha exacta seleccionada por rango de turbidez para las diferentes plantas."
+        };
+      }
+
+      if (selectedMonth && !selectedDay) {
+        return {
+          valid: true,
+          title: `Kg de coagulante del mes de ${getMonthLabelFromIso(selectedMonth)} según intervalos de turbidez`,
+          subtitle: "Suma mensual de Kg de Coagulante por rango de turbidez para P1 y P2, SP3 y Tonchalá."
+        };
+      }
+
+      const [year, month, day] = selectedDay.split('-');
+      return {
+        valid: true,
+        title: `Kg de coagulante del día ${day}/${month}/${year} según intervalos de turbidez`,
+        subtitle: "Suma de Kg de Coagulante del día seleccionado por rango de turbidez para las diferentes plantas."
+      };
+    }
+
+    function getKgCoagulanteByPlantAndRange(data, plantKey) {
+      const turbidityFieldMap = {
+        p1p2: 'Turbidez_Planta',
+        sp3: 'Turb_P3',
+        tonchala: 'Turb_Ing_Tonch'
+      };
+
+      const kgFieldMap = {
+        p1p2: 'Kg_Coag_P1P2',
+        sp3: 'Kg_Coag_P3',
+        tonchala: 'Kg_Coag_Tonchalá'
+      };
+
+      const turbidityField = turbidityFieldMap[plantKey];
+      const kgField = kgFieldMap[plantKey];
+
+      return ranges.map(range => {
+        return data.reduce((acc, row) => {
+          const turbidez = toNumber(row[turbidityField]);
+          const kg = toNumber(row[kgField]);
+          if (isNaN(turbidez) || isNaN(kg)) return acc;
+          if (!range.test(turbidez)) return acc;
+          return acc + kg;
+        }, 0);
+      });
+    }
+
+    function renderCoagulanteIntervalChart() {
+      const canvasId = 'coagulanteIntervalChart';
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const contextInfo = getCoagulanteChartContext();
+      if (coagulanteIntervalChartTitleEl) coagulanteIntervalChartTitleEl.textContent = contextInfo.title;
+      if (coagulanteIntervalChartSubtitleEl) coagulanteIntervalChartSubtitleEl.textContent = contextInfo.subtitle;
+
+      if (coagulanteIntervalChartInstance) {
+        coagulanteIntervalChartInstance.destroy();
+        coagulanteIntervalChartInstance = null;
+      }
+
+      if (!contextInfo.valid) {
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(canvasId, contextInfo.message);
+        return;
+      }
+
+      const filteredData = applyDateFilter(rawData);
+      const datasets = CHART_PLANTS.map(plant => ({
+        label: plant.label,
+        data: getKgCoagulanteByPlantAndRange(filteredData, plant.key),
+        backgroundColor: plant.color,
+        borderColor: plant.color,
+        borderWidth: 1
+      }));
+
+      const hasAnyData = datasets.some(dataset => dataset.data.some(value => value > 0));
+      if (!hasAnyData) {
+        clearCanvas(canvasId);
+        drawEmptyMessageOnCanvas(canvasId, 'No hay datos válidos con los filtros seleccionados');
+        return;
+      }
+
+      coagulanteIntervalChartInstance = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: ranges.map(r => r.label),
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                color: '#0f172a',
+                font: { size: 12 }
+              }
+            },
+            datalabels: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  if (!items.length) return '';
+                  return `Rango: ${items[0].label}`;
+                },
+                label(context) {
+                  const value = context.raw || 0;
+                  return `${context.dataset.label}: ${formatNumberEs(value, 2)} Kg`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Rangos de turbidez',
+                color: '#0f172a',
+                font: {
+                  weight: 'bold',
+                  size: 13
+                }
+              },
+              ticks: {
+                color: '#334155',
+                maxRotation: 30,
+                minRotation: 30
+              },
+              grid: {
+                color: '#e2e8f0'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Kg de Coagulante',
+                color: '#0f172a',
+                font: {
+                  weight: 'bold',
+                  size: 13
+                }
+              },
+              ticks: {
+                color: '#334155',
+                callback(value) {
+                  return formatNumberEs(value, 0);
+                }
+              },
+              grid: {
+                color: '#cbd5e1'
+              }
+            }
+          }
+        }
+      });
     }
 
     function buildPorticoTonchalaComposition(data, fieldMap) {
@@ -3480,6 +3738,7 @@
       destroyDailyCharts();
       destroyAnalysisCharts();
       destroyComparisonCharts();
+      destroyCoagulanteIntervalChart();
       destroyOperatorDailyChart();
       clearCanvas("resumenChart");
       clearCanvas("dailyChartP1P2");
@@ -3490,6 +3749,7 @@
       clearCanvas("pieTurbiedadP1P2Chart");
       clearCanvas("pieTurbiedadSP3Chart");
       clearCanvas("pieTurbiedadTonchalaChart");
+      clearCanvas("coagulanteIntervalChart");
       clearCanvas("comparisonVolumenChart");
       clearCanvas("comparisonCostoChart");
       clearCanvas("operatorDailyChart");
@@ -3518,6 +3778,7 @@
       renderResumenChart(filteredData);
       renderDailyTurbidityCharts();
       renderAnalysisCharts();
+      renderCoagulanteIntervalChart();
       renderComparisonCharts(filteredData);
       renderOperatorDailyChart();
       renderObjectiveBand();
