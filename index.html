@@ -1055,6 +1055,7 @@
     const btnSP3 = document.getElementById("btnSP3");
     const btnTonchala = document.getElementById("btnTonchala");
     const metricTitleEl = document.getElementById("metricTitle");
+    const yearSelectEl = document.getElementById("yearSelect");
     const monthSelectEl = document.getElementById("monthSelect");
     const daySelectEl = document.getElementById("daySelect");
     const intervalSelectEl = document.getElementById("intervalSelect");
@@ -1229,22 +1230,26 @@
     }
 
     function getValidRowsForOperatorDailyChart(data, plantConfig) {
+      const selectedYear = getSelectedYearValue();
       const monthIso = monthSelectEl.value;
       if (!monthIso) return [];
 
       return data.filter(row => {
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed || parsed.isoMonth !== monthIso) return false;
+        if (selectedYear && parsed.year !== selectedYear) return false;
         return true;
       });
     }
 
     function getAvailableMonthsFromData(data) {
+      const selectedYear = getSelectedYearValue();
       const monthMap = new Map();
 
       data.forEach(row => {
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return;
+        if (selectedYear && parsed.year !== selectedYear) return;
         if (!monthMap.has(parsed.isoMonth)) {
           monthMap.set(parsed.isoMonth, nombresMes[Number(parsed.month) - 1]);
         }
@@ -1261,8 +1266,14 @@
       const selectedRange = getSelectedRangeConfig();
       const rangeLabel = selectedRange ? selectedRange.label : "Todos";
 
+      const selectedYear = getSelectedYearValue();
       const sourceRows = isMonthlyView
-        ? data.filter(row => !!parseDateString(row[FIELD_FECHA]))
+        ? data.filter(row => {
+            const parsed = parseDateString(row[FIELD_FECHA]);
+            if (!parsed) return false;
+            if (selectedYear && parsed.year !== selectedYear) return false;
+            return true;
+          })
         : getValidRowsForOperatorDailyChart(data, plantConfig);
 
       const operatorAppearance = [];
@@ -1519,11 +1530,17 @@
       return true;
     }
 
-    function fillSelectors(data, options = {}) {
-      const {
-        forceFirstAvailableDay = false
-      } = options;
+    function formatDayOptionLabel(isoDay) {
+      const [year, month, day] = isoDay.split("-");
+      return `${day}/${month}/${year}`;
+    }
 
+    function getSelectedYearValue() {
+      return yearSelectEl ? yearSelectEl.value : "";
+    }
+
+    function buildDateSelectorState(data, selectedYear = "", selectedMonth = "") {
+      const years = new Map();
       const months = new Map();
       const days = new Set();
 
@@ -1531,51 +1548,91 @@
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return;
 
-        const year = parsed.isoMonth.slice(0, 4);
-        const monthNum = parseInt(parsed.isoMonth.slice(5, 7), 10);
-        const label = nombresMes[monthNum - 1] + " " + year;
+        const monthNum = parseInt(parsed.month, 10);
+        const monthLabel = nombresMes[monthNum - 1] + " " + parsed.year;
 
-        months.set(parsed.isoMonth, label);
-        days.add(parsed.isoDay);
+        years.set(parsed.year, parsed.year);
+
+        if (!selectedYear || parsed.year === selectedYear) {
+          months.set(parsed.isoMonth, monthLabel);
+        }
+
+        const matchesSelectedYear = !selectedYear || parsed.year === selectedYear;
+        const matchesSelectedMonth = !selectedMonth || parsed.isoMonth === selectedMonth;
+
+        if (matchesSelectedYear && matchesSelectedMonth) {
+          days.add(parsed.isoDay);
+        }
       });
 
-      const selectedMonth = monthSelectEl.value;
-      const selectedDay = daySelectEl.value;
+      return {
+        years,
+        months,
+        sortedDays: Array.from(days).sort((a, b) => b.localeCompare(a))
+      };
+    }
 
-      const sortedDays = Array.from(days).sort((a, b) => b.localeCompare(a));
-      const firstAvailableDay = sortedDays.length ? sortedDays[0] : "";
+    function fillSelectors(data, options = {}) {
+      const {
+        forceFirstAvailableDay = false
+      } = options;
+
+      const selectedYearBefore = getSelectedYearValue();
+      const selectedMonthBefore = monthSelectEl.value;
+      const selectedDayBefore = daySelectEl.value;
+
+      const baseState = buildDateSelectorState(data, selectedYearBefore, "");
+      const validSelectedYear = selectedYearBefore && baseState.years.has(selectedYearBefore)
+        ? selectedYearBefore
+        : "";
+
+      if (yearSelectEl) {
+        yearSelectEl.innerHTML =
+          '<option value="">Todos</option>' +
+          Array.from(baseState.years.keys())
+            .sort((a, b) => b.localeCompare(a))
+            .map(year => `<option value="${year}">${year}</option>`)
+            .join("");
+
+        yearSelectEl.value = validSelectedYear;
+      }
+
+      const monthState = buildDateSelectorState(data, validSelectedYear, "");
+      const validSelectedMonth = selectedMonthBefore && monthState.months.has(selectedMonthBefore)
+        ? selectedMonthBefore
+        : "";
 
       monthSelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        Array.from(months.entries())
+        Array.from(monthState.months.entries())
           .sort((a, b) => a[0].localeCompare(b[0]))
           .map(([value, label]) => `<option value="${value}">${label}</option>`)
           .join("");
 
+      monthSelectEl.value = validSelectedMonth;
+
+      const dayState = buildDateSelectorState(data, validSelectedYear, validSelectedMonth);
+      const firstAvailableDay = dayState.sortedDays.length ? dayState.sortedDays[0] : "";
+
       daySelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        sortedDays
-          .map(day => {
-            const [year, month, d] = day.split("-");
-            const formatted = `${d}/${month}/${year}`;
-            return `<option value="${day}">${formatted}</option>`;
-          })
+        dayState.sortedDays
+          .map(day => `<option value="${day}">${formatDayOptionLabel(day)}</option>`)
           .join("");
-
-      if (selectedMonth) {
-        monthSelectEl.value = selectedMonth;
-      }
 
       if (forceFirstAvailableDay) {
         daySelectEl.value = firstAvailableDay;
-      } else if (selectedDay && sortedDays.includes(selectedDay)) {
-        daySelectEl.value = selectedDay;
+      } else if (selectedDayBefore && dayState.sortedDays.includes(selectedDayBefore)) {
+        daySelectEl.value = selectedDayBefore;
+      } else if (selectedDayBefore && firstAvailableDay) {
+        daySelectEl.value = firstAvailableDay;
       } else {
         daySelectEl.value = "";
       }
     }
 
     function applyDateFilter(data) {
+      const selectedYear = getSelectedYearValue();
       const selectedMonth = monthSelectEl.value;
       const selectedDay = daySelectEl.value;
 
@@ -1583,6 +1640,7 @@
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return false;
 
+        if (selectedYear && parsed.year !== selectedYear) return false;
         if (selectedMonth && parsed.isoMonth !== selectedMonth) return false;
         if (selectedDay && parsed.isoDay !== selectedDay) return false;
 
@@ -1591,6 +1649,7 @@
     }
 
     function getMonthFilteredDataOnly(data) {
+      const selectedYear = getSelectedYearValue();
       const selectedMonth = monthSelectEl.value;
 
       if (!selectedMonth) return [];
@@ -1598,6 +1657,7 @@
       return data.filter(row => {
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return false;
+        if (selectedYear && parsed.year !== selectedYear) return false;
         return parsed.isoMonth === selectedMonth;
       });
     }
@@ -1617,6 +1677,9 @@
     }
 
     function getLatestYearFromData(data) {
+      const selectedYear = getSelectedYearValue();
+      if (selectedYear) return selectedYear;
+
       const years = data
         .map(row => {
           const parsed = parseDateString(row[FIELD_FECHA]);
@@ -3711,15 +3774,17 @@
       const fieldName = getObjectiveFieldName();
       if (!fieldName || !rawData.length) return "";
 
+      const selectedYear = getSelectedYearValue();
       const monthIso = monthSelectEl ? monthSelectEl.value : "";
-      const sourceData = monthIso
-        ? rawData.filter(row => {
-            const parsed = parseDateString(row[FIELD_FECHA]);
-            return parsed && parsed.isoMonth === monthIso;
-          })
-        : rawData;
+      const sourceData = rawData.filter(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed) return false;
+        if (selectedYear && parsed.year !== selectedYear) return false;
+        if (monthIso && parsed.isoMonth !== monthIso) return false;
+        return true;
+      });
 
-      for (const row of sourceData) {
+      for (const row of sourceData.length ? sourceData : rawData) {
         const value = toNumber(row[fieldName]);
         if (!isNaN(value)) return value;
       }
@@ -3994,8 +4059,20 @@
       if (rawData.length > 0) procesarDatos(rawData);
     });
 
+    if (yearSelectEl) {
+      yearSelectEl.addEventListener("change", () => {
+        if (rawData.length > 0) {
+          fillSelectors(rawData);
+          procesarDatos(rawData);
+        }
+      });
+    }
+
     monthSelectEl.addEventListener("change", () => {
-      if (rawData.length > 0) procesarDatos(rawData);
+      if (rawData.length > 0) {
+        fillSelectors(rawData);
+        procesarDatos(rawData);
+      }
     });
 
     daySelectEl.addEventListener("change", () => {
