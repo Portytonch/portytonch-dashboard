@@ -973,10 +973,25 @@
       "#7c3aed",
       "#ea580c",
       "#0891b2",
-      "#ca8a04"
+      "#ca8a04",
+      "#be123c",
+      "#0f766e",
+      "#9333ea",
+      "#1d4ed8",
+      "#15803d",
+      "#c2410c",
+      "#0369a1",
+      "#a16207",
+      "#374151",
+      "#4338ca",
+      "#047857",
+      "#e11d48",
+      "#7e22ce"
     ];
 
     const OPERATOR_OTHERS_COLOR = "#6b7280";
+    const OPERATOR_COLOR_STORAGE_KEY = "dashboard_operator_color_map_v1";
+    let operatorColorRegistry = loadOperatorColorRegistry();
 
     const PLANT_CONFIG = {
       p1p2: {
@@ -1206,17 +1221,126 @@
       };
     }
 
+    function normalizeOperatorName(value) {
+      return String(value || "").trim();
+    }
+
+    function safeLocalStorageGet(key) {
+      try {
+        return window.localStorage.getItem(key);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function safeLocalStorageSet(key, value) {
+      try {
+        window.localStorage.setItem(key, value);
+      } catch (error) {
+        // Ignorar bloqueos de almacenamiento del navegador.
+      }
+    }
+
+    function loadOperatorColorRegistry() {
+      const stored = safeLocalStorageGet(OPERATOR_COLOR_STORAGE_KEY);
+      if (!stored) return {};
+
+      try {
+        const parsed = JSON.parse(stored);
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveOperatorColorRegistry() {
+      safeLocalStorageSet(OPERATOR_COLOR_STORAGE_KEY, JSON.stringify(operatorColorRegistry));
+    }
+
+    function hashOperatorName(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i += 1) {
+        hash = ((hash << 5) - hash) + name.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function hslToHex(h, s, l) {
+      const hue = ((h % 360) + 360) % 360;
+      const sat = Math.max(0, Math.min(100, s)) / 100;
+      const lig = Math.max(0, Math.min(100, l)) / 100;
+
+      const c = (1 - Math.abs(2 * lig - 1)) * sat;
+      const x = c * (1 - Math.abs(((hue / 60) % 2) - 1));
+      const m = lig - c / 2;
+      let r = 0;
+      let g = 0;
+      let b = 0;
+
+      if (hue < 60) {
+        r = c; g = x; b = 0;
+      } else if (hue < 120) {
+        r = x; g = c; b = 0;
+      } else if (hue < 180) {
+        r = 0; g = c; b = x;
+      } else if (hue < 240) {
+        r = 0; g = x; b = c;
+      } else if (hue < 300) {
+        r = x; g = 0; b = c;
+      } else {
+        r = c; g = 0; b = x;
+      }
+
+      const toHex = value => Math.round((value + m) * 255).toString(16).padStart(2, "0");
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+
+    function generateOperatorColor(name) {
+      const hash = hashOperatorName(name);
+      const paletteColor = OPERATOR_COLOR_PALETTE[hash % OPERATOR_COLOR_PALETTE.length];
+      const hue = hash % 360;
+      const saturation = 62 + (hash % 14);
+      const lightness = 42 + (hash % 10);
+      return paletteColor || hslToHex(hue, saturation, lightness);
+    }
+
+    function getStableOperatorColor(operatorName) {
+      const normalized = normalizeOperatorName(operatorName);
+      if (!normalized) return OPERATOR_OTHERS_COLOR;
+      if (normalized === "Otros") return OPERATOR_OTHERS_COLOR;
+
+      if (!operatorColorRegistry[normalized]) {
+        operatorColorRegistry[normalized] = generateOperatorColor(normalized);
+        saveOperatorColorRegistry();
+      }
+
+      return operatorColorRegistry[normalized];
+    }
+
+    function registerOperatorsFromData(data) {
+      let changed = false;
+
+      data.forEach(row => {
+        const operator = normalizeOperatorName(row && row[FIELD_OPERADOR]);
+        if (!operator || operator === "Otros") return;
+
+        if (!operatorColorRegistry[operator]) {
+          operatorColorRegistry[operator] = generateOperatorColor(operator);
+          changed = true;
+        }
+      });
+
+      if (changed) saveOperatorColorRegistry();
+    }
+
     function getOperatorColorMap(operatorLabels) {
       const colorMap = {};
-      let paletteIndex = 0;
 
       operatorLabels.forEach(label => {
-        if (label === "Otros") {
-          colorMap[label] = OPERATOR_OTHERS_COLOR;
-        } else {
-          colorMap[label] = OPERATOR_COLOR_PALETTE[paletteIndex % OPERATOR_COLOR_PALETTE.length];
-          paletteIndex += 1;
-        }
+        colorMap[label] = label === "Otros"
+          ? OPERATOR_OTHERS_COLOR
+          : getStableOperatorColor(label);
       });
 
       return colorMap;
@@ -3918,6 +4042,7 @@
 
     function procesarDatos(data) {
       rawData = data;
+      registerOperatorsFromData(rawData);
 
       const plantConfig = getPlantConfig();
       const mode = currentMode;
