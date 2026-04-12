@@ -898,9 +898,9 @@
 
     <div class="section-title">Resultados por operador</div>
     <div class="table-note">
-      Este gráfico responde a la métrica activa, la planta activa y al selector de Mes.
-      Si en Mes se elige un mes específico, se muestra por días. Si en Mes se elige Todos, se muestra agrupado por meses del año.
-      Ignora por completo el filtro de Día. Los operadores sin dato se representan en cero y, si existen más de 7 operadores, el resto se agrupa como Otros.
+      Este gráfico responde a la métrica activa, la planta activa y a los selectores de Mes y Día.
+      Si en Día = Todos y Mes se elige un mes específico, se muestra por días. Si en Día = Todos y Mes = Todos, se muestra agrupado por meses del año.
+      Si se selecciona un día específico, este gráfico pasa a vista horaria, ignora el filtro de Mes y muestra las horas de 0 a 23. Los operadores sin dato se representan en cero y, si existen más de 7 operadores, el resto se agrupa como Otros.
     </div>
     <div class="operator-daily-chart-card">
       <div class="operator-daily-chart-header">
@@ -1262,19 +1262,30 @@
 
     function buildOperatorChartModel(data, plantConfig, mode) {
       const monthIso = monthSelectEl.value;
-      const isMonthlyView = !monthIso;
+      const selectedDay = daySelectEl.value;
+      const isHourlyView = !!selectedDay;
+      const isMonthlyView = !isHourlyView && !monthIso;
+      const isDailyView = !isHourlyView && !!monthIso;
       const selectedRange = getSelectedRangeConfig();
       const rangeLabel = selectedRange ? selectedRange.label : "Todos";
 
       const selectedYear = getSelectedYearValue();
-      const sourceRows = isMonthlyView
-        ? data.filter(row => {
-            const parsed = parseDateString(row[FIELD_FECHA]);
-            if (!parsed) return false;
-            if (selectedYear && parsed.year !== selectedYear) return false;
-            return true;
-          })
-        : getValidRowsForOperatorDailyChart(data, plantConfig);
+      const sourceRows = data.filter(row => {
+        const parsed = parseDateString(row[FIELD_FECHA]);
+        if (!parsed) return false;
+
+        if (isHourlyView) {
+          return parsed.isoDay === selectedDay;
+        }
+
+        if (isDailyView) {
+          if (selectedYear && parsed.year !== selectedYear) return false;
+          return parsed.isoMonth === monthIso;
+        }
+
+        if (selectedYear && parsed.year !== selectedYear) return false;
+        return true;
+      });
 
       const operatorAppearance = [];
       const seenOperators = new Set();
@@ -1290,34 +1301,53 @@
       const hasOthersGroup = operatorAppearance.length > 7;
       const operatorLabels = hasOthersGroup ? [...primaryOperators, "Otros"] : [...primaryOperators];
 
+      const selectedDayLabel = selectedDay
+        ? `${selectedDay.slice(8, 10)}/${selectedDay.slice(5, 7)}/${selectedDay.slice(0, 4)}`
+        : "";
+
       if (!operatorLabels.length) {
         return {
           state: "no-data",
-          message: isMonthlyView
-            ? "No hay operadores válidos para los datos disponibles."
-            : "No hay operadores válidos para el mes seleccionado.",
+          message: isHourlyView
+            ? "No hay operadores válidos para el día seleccionado."
+            : isDailyView
+              ? "No hay operadores válidos para el mes seleccionado."
+              : "No hay operadores válidos para los datos disponibles.",
           monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
+          selectedDayLabel,
           rangeLabel,
-          isMonthlyView
+          isMonthlyView,
+          isDailyView,
+          isHourlyView
         };
       }
 
-      const groupDefs = isMonthlyView
-        ? getAvailableMonthsFromData(sourceRows).map(item => ({ key: item.isoMonth, label: item.monthLabel }))
-        : Array.from({ length: getLastDayOfMonthFromIso(monthIso) }, (_, index) => ({
-            key: String(index + 1),
-            label: String(index + 1)
-          }));
+      const groupDefs = isHourlyView
+        ? Array.from({ length: 24 }, (_, index) => ({
+            key: String(index),
+            label: String(index)
+          }))
+        : isMonthlyView
+          ? getAvailableMonthsFromData(sourceRows).map(item => ({ key: item.isoMonth, label: item.monthLabel }))
+          : Array.from({ length: getLastDayOfMonthFromIso(monthIso) }, (_, index) => ({
+              key: String(index + 1),
+              label: String(index + 1)
+            }));
 
       if (!groupDefs.length) {
         return {
           state: "no-data",
-          message: isMonthlyView
-            ? "No hay meses válidos para graficar."
-            : "No hay días válidos para graficar.",
+          message: isHourlyView
+            ? "No hay horas válidas para graficar."
+            : isDailyView
+              ? "No hay días válidos para graficar."
+              : "No hay meses válidos para graficar.",
           monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
+          selectedDayLabel,
           rangeLabel,
-          isMonthlyView
+          isMonthlyView,
+          isDailyView,
+          isHourlyView
         };
       }
 
@@ -1345,7 +1375,7 @@
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return;
 
-        const groupKey = isMonthlyView ? parsed.isoMonth : String(Number(parsed.day));
+        const groupKey = isHourlyView ? String(getHourValue(row)) : (isMonthlyView ? parsed.isoMonth : String(Number(parsed.day)));
         if (!grouped[groupKey]) return;
 
         const rawOperator = String(row[FIELD_OPERADOR] || "").trim();
@@ -1444,9 +1474,12 @@
         datasets,
         operatorLabels,
         monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
+        selectedDayLabel,
         rangeLabel,
         maxValue,
-        isMonthlyView
+        isMonthlyView,
+        isDailyView,
+        isHourlyView
       };
     }
 
@@ -2925,32 +2958,45 @@
       const canvas = document.getElementById(canvasId);
       const model = buildOperatorChartModel(rawData, getPlantConfig(), currentMode);
       const formatter = getChartMetricFormatter(currentMode);
-      const selectedRange = getSelectedRangeConfig();
       const isMonthlyView = !!model.isMonthlyView;
+      const isDailyView = !!model.isDailyView;
+      const isHourlyView = !!model.isHourlyView;
 
       destroyOperatorDailyChart();
 
-      operatorDailyChartTitleEl.textContent = isMonthlyView
-        ? "Resultados mensuales"
-        : `Resultados diarios - ${model.monthLabel}`;
+      operatorDailyChartTitleEl.textContent = isHourlyView
+        ? "Resultados horarios"
+        : isMonthlyView
+          ? "Resultados mensuales"
+          : `Resultados diarios - ${model.monthLabel}`;
 
       if (model.state === "no-data") {
-        operatorDailyChartSubtitleEl.textContent = `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. ${isMonthlyView ? 'El gráfico ignora el filtro de Día y agrupa por meses del año.' : 'El gráfico ignora el filtro de Día y agrupa por días del mes seleccionado.'}`;
+        operatorDailyChartSubtitleEl.textContent = isHourlyView
+          ? `Resultados horarios - ${model.selectedDayLabel}`
+          : isMonthlyView
+            ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Mes = Todos y Día = Todos, el gráfico agrupa por meses del año.`
+            : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Día = Todos, el gráfico agrupa por días del mes seleccionado.`;
         clearCanvas(canvasId);
         drawEmptyMessageOnCanvas(canvasId, model.message || "No hay datos válidos para mostrar");
         return;
       }
 
       if (model.state === "not-applicable") {
-        operatorDailyChartSubtitleEl.textContent = `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. ${isMonthlyView ? 'El gráfico ignora el filtro de Día y agrupa por meses del año.' : 'El gráfico ignora el filtro de Día y agrupa por días del mes seleccionado.'}`;
+        operatorDailyChartSubtitleEl.textContent = isHourlyView
+          ? `Resultados horarios - ${model.selectedDayLabel}`
+          : isMonthlyView
+            ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Mes = Todos y Día = Todos, el gráfico agrupa por meses del año.`
+            : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Día = Todos, el gráfico agrupa por días del mes seleccionado.`;
         clearCanvas(canvasId);
         drawEmptyMessageOnCanvas(canvasId, "No aplica para la planta activa por falta de columnas o datos");
         return;
       }
 
-      operatorDailyChartSubtitleEl.textContent = isMonthlyView
-        ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${selectedRange ? selectedRange.label : 'Todos'}. El gráfico ignora el filtro de Día y, cuando Mes = Todos, agrupa por meses del año. Los operadores sin dato aparecen en cero.`
-        : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${selectedRange ? selectedRange.label : 'Todos'}. El gráfico ignora el filtro de Día y los operadores sin dato aparecen en cero.`;
+      operatorDailyChartSubtitleEl.textContent = isHourlyView
+        ? `Resultados horarios - ${model.selectedDayLabel}`
+        : isMonthlyView
+          ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Mes = Todos y Día = Todos, el gráfico agrupa por meses del año. Los operadores sin dato aparecen en cero.`
+          : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Día = Todos, el gráfico agrupa por días del mes seleccionado. Los operadores sin dato aparecen en cero.`;
 
       const yMax = currentMode === "porcentaje"
         ? 100
@@ -2990,7 +3036,7 @@
               callbacks: {
                 title(items) {
                   if (!items.length) return "";
-                  return isMonthlyView ? `Mes ${items[0].label}` : `Día ${items[0].label}`;
+                  return isHourlyView ? `Hora ${items[0].label}` : isMonthlyView ? `Mes ${items[0].label}` : `Día ${items[0].label}`;
                 },
                 label(context) {
                   const operatorName = context.dataset.operatorNames[context.dataIndex] || "Sin operador";
@@ -3019,7 +3065,7 @@
             x: {
               title: {
                 display: true,
-                text: isMonthlyView ? "Meses del año" : "Días del mes",
+                text: isHourlyView ? "Horas del día" : isMonthlyView ? "Meses del año" : "Días del mes",
                 color: "#0f172a",
                 font: {
                   weight: "bold",
@@ -3029,8 +3075,8 @@
               stacked: false,
               ticks: {
                 color: "#334155",
-                autoSkip: true,
-                maxTicksLimit: isMonthlyView ? 12 : 16
+                autoSkip: !isHourlyView,
+                maxTicksLimit: isHourlyView ? 24 : isMonthlyView ? 12 : 16
               },
               grid: {
                 color: "#e2e8f0"
