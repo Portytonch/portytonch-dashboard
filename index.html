@@ -1083,6 +1083,8 @@
 
     Chart.register(ChartDataLabels);
 
+    ensureOperatorRegistryUniqueness();
+
     function getPlantConfig() {
       return PLANT_CONFIG[currentPlant];
     }
@@ -1296,13 +1298,55 @@
       return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 
-    function generateOperatorColor(name) {
+    function buildOperatorColor(seedHash, attempt = 0) {
+      const hue = (seedHash + Math.round(attempt * 137.508)) % 360;
+      const saturation = 62 + ((seedHash + attempt * 17) % 14);
+      const lightness = 42 + ((seedHash + attempt * 11) % 10);
+      return hslToHex(hue, saturation, lightness);
+    }
+
+    function generateOperatorColor(name, registry = {}) {
       const hash = hashOperatorName(name);
-      const paletteColor = OPERATOR_COLOR_PALETTE[hash % OPERATOR_COLOR_PALETTE.length];
-      const hue = hash % 360;
-      const saturation = 62 + (hash % 14);
-      const lightness = 42 + (hash % 10);
-      return paletteColor || hslToHex(hue, saturation, lightness);
+      const usedColors = new Set(
+        Object.entries(registry)
+          .filter(([operator]) => operator !== name)
+          .map(([, color]) => String(color || '').toLowerCase())
+      );
+
+      for (let attempt = 0; attempt < 360; attempt += 1) {
+        const candidate = buildOperatorColor(hash, attempt);
+        if (!usedColors.has(candidate.toLowerCase())) {
+          return candidate;
+        }
+      }
+
+      return buildOperatorColor(hash, 0);
+    }
+
+    function ensureOperatorRegistryUniqueness() {
+      const normalizedRegistry = {};
+      let changed = false;
+      const usedColors = new Set();
+
+      Object.keys(operatorColorRegistry || {})
+        .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }))
+        .forEach(operator => {
+          if (!operator || operator === 'Otros') return;
+
+          const savedColor = String(operatorColorRegistry[operator] || '').toLowerCase();
+          let finalColor = savedColor;
+
+          if (!finalColor || usedColors.has(finalColor)) {
+            finalColor = generateOperatorColor(operator, normalizedRegistry).toLowerCase();
+            if (finalColor !== savedColor) changed = true;
+          }
+
+          normalizedRegistry[operator] = finalColor;
+          usedColors.add(finalColor);
+        });
+
+      operatorColorRegistry = normalizedRegistry;
+      if (changed) saveOperatorColorRegistry();
     }
 
     function getStableOperatorColor(operatorName) {
@@ -1311,7 +1355,7 @@
       if (normalized === "Otros") return OPERATOR_OTHERS_COLOR;
 
       if (!operatorColorRegistry[normalized]) {
-        operatorColorRegistry[normalized] = generateOperatorColor(normalized);
+        operatorColorRegistry[normalized] = generateOperatorColor(normalized, operatorColorRegistry);
         saveOperatorColorRegistry();
       }
 
@@ -1326,11 +1370,12 @@
         if (!operator || operator === "Otros") return;
 
         if (!operatorColorRegistry[operator]) {
-          operatorColorRegistry[operator] = generateOperatorColor(operator);
+          operatorColorRegistry[operator] = generateOperatorColor(operator, operatorColorRegistry);
           changed = true;
         }
       });
 
+      ensureOperatorRegistryUniqueness();
       if (changed) saveOperatorColorRegistry();
     }
 
