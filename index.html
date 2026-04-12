@@ -67,7 +67,6 @@
     #btnCaudal { grid-column: 5; grid-row: 1; }
     #btnHoras { grid-column: 6; grid-row: 1; }
     #btnPorcentaje { grid-column: 7; grid-row: 1; }
-    #btnM3 { grid-column: 8; grid-row: 1; }
     #btnCalifFinal { grid-column: 10; grid-row: 1; }
 
     .date-filters {
@@ -582,7 +581,6 @@
       #btnCaudal,
       #btnHoras,
       #btnPorcentaje,
-      #btnM3,
       #btnCalifFinal,
       .month-group,
       .day-group,
@@ -672,7 +670,6 @@
         <button id="btnCaudal">Volumen M3</button>
         <button id="btnHoras">Horas</button>
         <button id="btnPorcentaje">Porcentaje</button>
-        <button id="btnM3">$/m3</button>
         <button id="btnCalifFinal">Calificación Final</button>
 
         <div class="date-filters">
@@ -737,7 +734,7 @@
       </div>
 
       <div class="summary-chart-wrap">
-        <div class="summary-chart-title">Curvas de $/m3 por rango de turbidez</div>
+        <div class="summary-chart-title">Curvas de dosis por rango de turbidez</div>
         <canvas id="resumenChart" class="summary-chart-canvas"></canvas>
         <div class="summary-chart-note">
           El gráfico solo responde a los filtros de Mes y Día.
@@ -779,17 +776,17 @@
       </div>
 
       <div class="analysis-chart-card">
-        <div class="analysis-chart-title">Boxplot de $/m3</div>
+        <div class="analysis-chart-title">Boxplot de Dosis</div>
         <div class="analysis-chart-subtitle">
-          Variables: $/m3_P1P2, $/m3_SP3 y $/m3_Tonch.
+          Variables: Dosis_P1P2, Dosis_Aplic_Coag1 y Apl_PHCA.
         </div>
         <canvas id="boxplotM3Chart" class="analysis-chart-canvas"></canvas>
       </div>
 
       <div class="analysis-chart-card">
-        <div class="analysis-chart-title">Boxplot de Costos Qcos</div>
+        <div class="analysis-chart-title">Boxplot de Kg de coagulante</div>
         <div class="analysis-chart-subtitle">
-          Variables: Costo_P1P2, Costo_P3 y Costo_Tonchalá.
+          Variables: Kg_Coag_P1P2, Kg_Coag_P3 y Kg_Coag_Tonchalá.
         </div>
         <canvas id="boxplotCostosQcosChart" class="analysis-chart-canvas"></canvas>
       </div>
@@ -839,9 +836,9 @@
       </div>
 
       <div class="comparison-chart-card">
-        <div class="comparison-chart-title">Comparación de Costos: Pórtico vs Tonchalá y Composición Interna de Pórtico</div>
+        <div class="comparison-chart-title">Comparación de Kg de coagulante: Pórtico vs Tonchalá y Composición Interna de Pórtico</div>
         <div class="comparison-chart-subtitle">
-          Pórtico se desglosa en Costo_P1, Costo_P2 y Costo_P3. Tonchalá se muestra como barra simple usando Costo_Tonchalá.
+          Pórtico se desglosa en Kg_Coag_P1P2 y Kg_Coag_P3. Tonchalá se muestra como barra simple usando Kg_Coag_Tonchalá.
         </div>
         <canvas id="comparisonCostoChart" class="comparison-chart-canvas"></canvas>
       </div>
@@ -935,7 +932,6 @@
         turbidezField: "Turbidez_Planta",
         fields: {
           dosis: "Dosis_P1P2",
-          m3: "$/m3_P1P2",
           clarP1: "Turbidez_Clar_P1",
           clarP2: "Turbidez_Clar_P2",
           finales: "Finales",
@@ -949,7 +945,6 @@
         turbidezField: "Turb_P3",
         fields: {
           dosis: "Dosis_Aplic_Coag1",
-          m3: "$/m3_SP3",
           clarificadas: "Clarificadas_P3",
           finales: "Turb_Sal",
           caudal: "Caudal_m3_P3",
@@ -962,7 +957,6 @@
         turbidezField: "Turb_Ing_Tonch",
         fields: {
           dosis: "Apl_PHCA",
-          m3: "$/m3_Tonch",
           clarificadas: "Clarif_Tonch",
           finales: "Turb_Prod_Tonch",
           caudal: "Q_Trat_Tonch",
@@ -1003,7 +997,6 @@
     const btnCaudal = document.getElementById("btnCaudal");
     const btnHoras = document.getElementById("btnHoras");
     const btnPorcentaje = document.getElementById("btnPorcentaje");
-    const btnM3 = document.getElementById("btnM3");
     const btnCalifFinal = document.getElementById("btnCalifFinal");
     const btnP1P2 = document.getElementById("btnP1P2");
     const btnSP3 = document.getElementById("btnSP3");
@@ -1100,7 +1093,6 @@
       if (currentMode === "finales") return "Finales";
       if (currentMode === "caudal") return "Volumen M3";
       if (currentMode === "horas") return "Horas";
-      if (currentMode === "m3") return "$/m3";
       if (currentMode === "califFinal") return "Calificación Final";
       return "Porcentaje";
     }
@@ -1142,7 +1134,6 @@
       if (mode === "caudal") return "Volumen M3";
       if (mode === "horas") return "Horas";
       if (mode === "porcentaje") return "Porcentaje";
-      if (mode === "m3") return "$/m3";
       if (mode === "califFinal") return "Calificación";
       return "Valor";
     }
@@ -1154,7 +1145,6 @@
         if (mode === "caudal") return formatIntegerEs(value);
         if (mode === "horas") return formatIntegerEs(value);
         if (mode === "porcentaje") return formatPercentValue(value, 1);
-        if (mode === "m3") return "$ " + formatNumberEs(value, 2);
 
         return formatNumberEs(value, 2);
       };
@@ -1423,10 +1413,6 @@
         faltantes.push(plantFields.dosis);
       }
 
-      if (mode === "m3" && plantFields.m3 && !columnas.has(plantFields.m3)) {
-        faltantes.push(plantFields.m3);
-      }
-
       if (mode === "clarificadas") {
         if (plantConfig.key === "p1p2") {
           if (plantFields.clarP1 && !columnas.has(plantFields.clarP1)) faltantes.push(plantFields.clarP1);
@@ -1455,18 +1441,13 @@
         "Dosis_P1P2",
         "Dosis_Aplic_Coag1",
         "Apl_PHCA",
-        "$/m3_P1P2",
-        "$/m3_SP3",
-        "$/m3_Tonch",
-        "Costo_P1P2",
-        "Costo_P3",
-        "Costo_Tonchalá",
+        "Kg_Coag_P1P2",
+        "Kg_Coag_P3",
+        "Kg_Coag_Tonchalá",
         "Q_Tratada_P1",
         "Q_Tratada_P2",
         "Vol_P3",
-        "Q_Trat_Tonch",
-        "Costo_P1",
-        "Costo_P2"
+        "Q_Trat_Tonch"
       ];
 
       camposAnalisis.forEach(campo => {
@@ -1593,11 +1574,6 @@
         return isNaN(value) ? NaN : value;
       }
 
-      if (mode === "m3") {
-        const value = toNumber(row[plantFields.m3]);
-        return isNaN(value) ? NaN : value;
-      }
-
       if (mode === "clarificadas") {
         if (plantConfig.key === "p1p2") {
           const c1 = toNumber(row[plantFields.clarP1]);
@@ -1673,7 +1649,6 @@
 
     function isWeightedAverageMode(mode = currentMode) {
       return mode === "dosis" ||
-             mode === "m3" ||
              mode === "clarificadas" ||
              mode === "finales" ||
              mode === "califFinal";
@@ -1723,13 +1698,6 @@
 
     function formatResumenValue(variableKey, value) {
       if (value === "" || value === null || value === undefined || isNaN(value)) return "";
-
-      if (variableKey === "m3") {
-        return "$ " + Number(value).toLocaleString("es-CO", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-      }
 
       if (variableKey === "caudal" || variableKey === "horas") {
         return formatIntegerEs(value);
@@ -2075,7 +2043,7 @@
       targetEl.innerHTML = html;
     }
 
-    function getM3SeriesByPlant(data, plantKey) {
+    function getDosisSeriesByPlant(data, plantKey) {
       const config = PLANT_CONFIG[plantKey];
       const result = [];
 
@@ -2086,7 +2054,7 @@
           const turbidez = getTurbidezPromedioValue(row, config);
           if (isNaN(turbidez) || !range.test(turbidez)) return;
 
-          const value = getMetricValue(row, config, "m3");
+          const value = getMetricValue(row, config, "dosis");
           const weight = getWeightValue(row, config);
 
           if (isNaN(value) || isNaN(weight) || weight <= 0) return;
@@ -2329,6 +2297,7 @@
     }
 
     function sumField(data, fieldName) {
+      if (!fieldName) return 0;
       return data.reduce((acc, row) => {
         const value = toNumber(row[fieldName]);
         return isNaN(value) ? acc : acc + value;
@@ -2347,7 +2316,7 @@
       const tonchalaShareTotal = combinedTotal > 0 ? (tonchala / combinedTotal) * 100 : 0;
 
       const p1ShareWithinPortico = porticoTotal > 0 ? (p1 / porticoTotal) * 100 : 0;
-      const p2ShareWithinPortico = porticoTotal > 0 ? (p2 / porticoTotal) * 100 : 0;
+      const p2ShareWithinPortico = 0;
       const p3ShareWithinPortico = porticoTotal > 0 ? (p3 / porticoTotal) * 100 : 0;
 
       return {
@@ -2405,15 +2374,9 @@
 
       const datasets = [
         {
-          label: "P1",
+          label: "P1 y P2",
           data: [composition.stackedShare.p1, 0],
           backgroundColor: PORTICO_STACK_COLORS.p1,
-          stack: "total"
-        },
-        {
-          label: "P2",
-          data: [composition.stackedShare.p2, 0],
-          backgroundColor: PORTICO_STACK_COLORS.p2,
           stack: "total"
         },
         {
@@ -2466,8 +2429,7 @@
                   const value = context.raw || 0;
 
                   if (context.dataIndex === 0) {
-                    if (datasetLabel === "P1") return `P1: ${formatPercentValue(composition.internalShare.p1, 2)} de Pórtico`;
-                    if (datasetLabel === "P2") return `P2: ${formatPercentValue(composition.internalShare.p2, 2)} de Pórtico`;
+                    if (datasetLabel === "P1 y P2") return `P1 y P2: ${formatPercentValue(composition.internalShare.p1, 2)} de Pórtico`;
                     if (datasetLabel === "P3") return `P3: ${formatPercentValue(composition.internalShare.p3, 2)} de Pórtico`;
                     return null;
                   }
@@ -2511,8 +2473,7 @@
                 const label = context.dataset.label;
 
                 if (idx === 0) {
-                  if (label === "P1") return value > 0 ? `P1\n${formatPercentValue(composition.internalShare.p1, 1)}` : "";
-                  if (label === "P2") return value > 0 ? `P2\n${formatPercentValue(composition.internalShare.p2, 1)}` : "";
+                  if (label === "P1 y P2") return value > 0 ? `P1 y P2\n${formatPercentValue(composition.internalShare.p1, 1)}` : "";
                   if (label === "P3") return value > 0 ? `P3\n${formatPercentValue(composition.internalShare.p3, 1)}` : "";
                   return "";
                 }
@@ -2747,10 +2708,10 @@
       });
 
       const costoComposition = buildPorticoTonchalaComposition(dataFiltrada, {
-        p1: "Costo_P1",
-        p2: "Costo_P2",
-        p3: "Costo_P3",
-        tonchala: "Costo_Tonchalá"
+        p1: "Kg_Coag_P1P2",
+        p2: null,
+        p3: "Kg_Coag_P3",
+        tonchala: "Kg_Coag_Tonchalá"
       });
 
       comparisonVolumenChartInstance = renderComparisonChart(
@@ -2960,13 +2921,13 @@
       const turbiedadSP3Values = getValidFieldValues(filteredData, "Turb_P3");
       const turbiedadTonchalaValues = getValidFieldValues(filteredData, "Turb_Ing_Tonch");
 
-      const m3P1P2Values = getValidFieldValues(filteredData, "$/m3_P1P2");
-      const m3SP3Values = getValidFieldValues(filteredData, "$/m3_SP3");
-      const m3TonchalaValues = getValidFieldValues(filteredData, "$/m3_Tonch");
+      const dosisP1P2Values = getValidFieldValues(filteredData, "Dosis_P1P2");
+      const dosisSP3Values = getValidFieldValues(filteredData, "Dosis_Aplic_Coag1");
+      const dosisTonchalaValues = getValidFieldValues(filteredData, "Apl_PHCA");
 
-      const costosQcosP1P2Values = getValidFieldValues(filteredData, "Costo_P1P2");
-      const costosQcosP3Values = getValidFieldValues(filteredData, "Costo_P3");
-      const costosQcosTonchalaValues = getValidFieldValues(filteredData, "Costo_Tonchalá");
+      const kgCoagP1P2Values = getValidFieldValues(filteredData, "Kg_Coag_P1P2");
+      const kgCoagP3Values = getValidFieldValues(filteredData, "Kg_Coag_P3");
+      const kgCoagTonchalaValues = getValidFieldValues(filteredData, "Kg_Coag_Tonchalá");
 
       const turbiedadP1P2Dist = getRangeCountsAndPercentages(turbiedadP1P2Values);
       const turbiedadSP3Dist = getRangeCountsAndPercentages(turbiedadSP3Values);
@@ -2987,22 +2948,22 @@
         "boxplotM3Chart",
         boxplotM3ChartInstance,
         [
-          { label: "P1 y P2", values: m3P1P2Values, color: PLANT_COLORS.p1p2 },
-          { label: "SP3", values: m3SP3Values, color: PLANT_COLORS.sp3 },
-          { label: "Tonchalá", values: m3TonchalaValues, color: PLANT_COLORS.tonchala }
+          { label: "P1 y P2", values: dosisP1P2Values, color: PLANT_COLORS.p1p2 },
+          { label: "SP3", values: dosisSP3Values, color: PLANT_COLORS.sp3 },
+          { label: "Tonchalá", values: dosisTonchalaValues, color: PLANT_COLORS.tonchala }
         ],
-        "$/m3"
+        "Dosis"
       );
 
       boxplotCostosQcosChartInstance = renderBoxplotChart(
         "boxplotCostosQcosChart",
         boxplotCostosQcosChartInstance,
         [
-          { label: "P1 y P2", values: costosQcosP1P2Values, color: PLANT_COLORS.p1p2 },
-          { label: "P3", values: costosQcosP3Values, color: PLANT_COLORS.sp3 },
-          { label: "Tonchalá", values: costosQcosTonchalaValues, color: PLANT_COLORS.tonchala }
+          { label: "P1 y P2", values: kgCoagP1P2Values, color: PLANT_COLORS.p1p2 },
+          { label: "P3", values: kgCoagP3Values, color: PLANT_COLORS.sp3 },
+          { label: "Tonchalá", values: kgCoagTonchalaValues, color: PLANT_COLORS.tonchala }
         ],
-        "Costos Qcos"
+        "Kg de coagulante"
       );
 
       pieTurbiedadP1P2ChartInstance = renderPieChart(
@@ -3219,7 +3180,7 @@
 
       const series = CHART_PLANTS.map(plant => ({
         ...plant,
-        values: getM3SeriesByPlant(dataFiltrada, plant.key)
+        values: getDosisSeriesByPlant(dataFiltrada, plant.key)
       }));
 
       const allValues = series
@@ -3298,7 +3259,7 @@
                     return `${context.dataset.label}: sin datos`;
                   }
 
-                  return `${context.dataset.label}: $ ${Number(value).toLocaleString("es-CO", {
+                  return `${context.dataset.label}: ${Number(value).toLocaleString("es-CO", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                   })}`;
@@ -3331,7 +3292,7 @@
               max: yMax,
               title: {
                 display: true,
-                text: "$/m3",
+                text: "Dosis",
                 color: "#0f172a",
                 font: {
                   weight: "bold",
@@ -3341,7 +3302,7 @@
               ticks: {
                 color: "#334155",
                 callback(value) {
-                  return "$ " + Number(value).toLocaleString("es-CO", {
+                  return Number(value).toLocaleString("es-CO", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                   });
@@ -3365,7 +3326,7 @@
         { label: "Clarificadas (NTU)", key: "clarificadas", type: "weighted" },
         { label: "Finales (NTU)", key: "finales", type: "weighted" },
         { label: "Volumen (m3)", key: "caudal", type: "sum" },
-        { label: "$/m3", key: "m3", type: "weighted" }
+
       ];
 
       let html = `
@@ -3430,11 +3391,6 @@
           sp3: "Obj_Final_SP3",
           tonchala: "Obj_Final_Tonch"
         },
-        m3: {
-          p1p2: "Obj_$/m3_P1P2",
-          sp3: "Obj_$/m3_SP3",
-          tonchala: "Obj_$/m3_Tonch"
-        },
         califFinal: {
           p1p2: "Obj_Cal_P1P2",
           sp3: "Obj_Cal_SP3",
@@ -3468,10 +3424,6 @@
     function formatObjectiveValue(value) {
       if (value === "" || value === null || value === undefined || isNaN(value)) return "";
 
-      if (currentMode === "m3") {
-        return `Valor Objetivo: $ ${formatNumberEs(value, 2)}`;
-      }
-
       if (currentMode === "califFinal") {
         return `Valor Objetivo: ${formatNumberEs(value, 1)}`;
       }
@@ -3502,7 +3454,6 @@
       btnCaudal.classList.toggle("active", currentMode === "caudal");
       btnHoras.classList.toggle("active", currentMode === "horas");
       btnPorcentaje.classList.toggle("active", currentMode === "porcentaje");
-      btnM3.classList.toggle("active", currentMode === "m3");
       btnCalifFinal.classList.toggle("active", currentMode === "califFinal");
 
       btnP1P2.classList.toggle("active", currentPlant === "p1p2");
@@ -3706,12 +3657,6 @@
 
     btnPorcentaje.addEventListener("click", () => {
       currentMode = "porcentaje";
-      updateButtons();
-      if (rawData.length > 0) procesarDatos(rawData);
-    });
-
-    btnM3.addEventListener("click", () => {
-      currentMode = "m3";
       updateButtons();
       if (rawData.length > 0) procesarDatos(rawData);
     });
