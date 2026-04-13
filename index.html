@@ -797,6 +797,23 @@
       </div>
     </div>
 
+    <div class="section-title">Resultados por operador</div>
+    <div class="table-note">
+      Este gráfico responde a la métrica activa, la planta activa y a los selectores de Mes y Día.
+      Si en Día = Todos y Mes se elige un mes específico, se muestra por días. Si en Día = Todos y Mes = Todos, se muestra agrupado por meses del año.
+      Si se selecciona un día específico, este gráfico pasa a vista horaria, ignora el filtro de Mes y muestra las horas de 0 a 23. Los operadores sin dato se representan en cero y, si existen más de 7 operadores, el resto se agrupa como Otros.
+    </div>
+    <div class="operator-daily-chart-card">
+      <div class="operator-daily-chart-header">
+        <div>
+          <div class="operator-daily-chart-title" id="operatorDailyChartTitle">Resultados diarios</div>
+          <div class="operator-daily-chart-subtitle" id="operatorDailyChartSubtitle">Seleccione un mes.</div>
+        </div>
+      </div>
+      <div class="operator-daily-chart-canvas-wrap">
+        <canvas id="operatorDailyChart" class="operator-daily-chart-canvas"></canvas>
+      </div>
+
     <div class="section-title">Análisis estadístico complementario</div>
     <div class="table-note">
       Estos gráficos son fijos, independientes de los botones de métricas y planta, y solo responden a los filtros de Mes y Día.
@@ -896,22 +913,6 @@
       </div>
     </div>
 
-    <div class="section-title">Resultados por operador</div>
-    <div class="table-note">
-      Este gráfico responde a la métrica activa, la planta activa y a los selectores de Mes y Día.
-      Si en Día = Todos y Mes se elige un mes específico, se muestra por días. Si en Día = Todos y Mes = Todos, se muestra agrupado por meses del año.
-      Si se selecciona un día específico, este gráfico pasa a vista horaria, ignora el filtro de Mes y muestra las horas de 0 a 23. Los operadores sin dato se representan en cero y, si existen más de 7 operadores, el resto se agrupa como Otros.
-    </div>
-    <div class="operator-daily-chart-card">
-      <div class="operator-daily-chart-header">
-        <div>
-          <div class="operator-daily-chart-title" id="operatorDailyChartTitle">Resultados diarios</div>
-          <div class="operator-daily-chart-subtitle" id="operatorDailyChartSubtitle">Seleccione un mes.</div>
-        </div>
-      </div>
-      <div class="operator-daily-chart-canvas-wrap">
-        <canvas id="operatorDailyChart" class="operator-daily-chart-canvas"></canvas>
-      </div>
     </div>
   </div>
 
