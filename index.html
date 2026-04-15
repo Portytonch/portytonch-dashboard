@@ -471,46 +471,6 @@
       display: block;
     }
 
-    .coagulante-interval-chart-card {
-      position: relative;
-      width: 100%;
-      min-height: 420px;
-      border: 1px solid #dbe2ea;
-      border-radius: 12px;
-      background: white;
-      padding: 14px;
-      box-sizing: border-box;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-
-    .coagulante-interval-chart-title {
-      font-size: 15px;
-      font-weight: bold;
-      margin-bottom: 6px;
-      color: #0f172a;
-    }
-
-    .coagulante-interval-chart-subtitle {
-      font-size: 12px;
-      color: #64748b;
-      margin-bottom: 10px;
-      line-height: 1.4;
-      min-height: 34px;
-    }
-
-    .coagulante-interval-chart-canvas-wrap {
-      position: relative;
-      width: 100%;
-      min-height: 320px;
-      height: 320px;
-    }
-
-    .coagulante-interval-chart-canvas {
-      width: 100% !important;
-      height: 100% !important;
-      display: block;
-    }
 
     .interval-group {
       display: flex;
@@ -782,37 +742,20 @@
       </div>
     </div>
 
-    <div class="section-title">Turbidez promedio diaria por mes</div>
+    <div class="section-title">Turbiedad promedio diaria por mes</div>
     <div class="daily-charts-grid">
       <div class="daily-chart-card">
-        <div class="daily-chart-title" id="dailyTitleP1P2">P1 y P2 - Turbidez promedio diaria</div>
+        <div class="daily-chart-title" id="dailyTitleP1P2">P1 y P2 - Turbiedad promedio diaria</div>
         <div class="daily-chart-subtitle" id="dailySubtitleP1P2">Seleccione un mes para visualizar los días del mes.</div>
         <canvas id="dailyChartP1P2" class="daily-chart-canvas"></canvas>
       </div>
 
       <div class="daily-chart-card">
-        <div class="daily-chart-title" id="dailyTitleTonchala">Tonchalá - Turbidez promedio diaria</div>
+        <div class="daily-chart-title" id="dailyTitleTonchala">Tonchalá - Turbiedad promedio diaria</div>
         <div class="daily-chart-subtitle" id="dailySubtitleTonchala">Seleccione un mes para visualizar los días del mes.</div>
         <canvas id="dailyChartTonchala" class="daily-chart-canvas"></canvas>
       </div>
     </div>
-
-    <div class="section-title">Resultados por operador</div>
-    <div class="table-note">
-      Este gráfico responde a la métrica activa, la planta activa y a los selectores de Mes y Día.
-      Si en Día = Todos y Mes se elige un mes específico, se muestra por días. Si en Día = Todos y Mes = Todos, se muestra agrupado por meses del año.
-      Si se selecciona un día específico, este gráfico pasa a vista horaria, ignora el filtro de Mes y muestra las horas de 0 a 23. Los operadores sin dato se representan en cero y, si existen más de 7 operadores, el resto se agrupa como Otros.
-    </div>
-    <div class="operator-daily-chart-card">
-      <div class="operator-daily-chart-header">
-        <div>
-          <div class="operator-daily-chart-title" id="operatorDailyChartTitle">Resultados diarios</div>
-          <div class="operator-daily-chart-subtitle" id="operatorDailyChartSubtitle">Seleccione un mes.</div>
-        </div>
-      </div>
-      <div class="operator-daily-chart-canvas-wrap">
-        <canvas id="operatorDailyChart" class="operator-daily-chart-canvas"></canvas>
-      </div>
 
     <div class="section-title">Análisis estadístico complementario</div>
     <div class="table-note">
@@ -825,7 +768,7 @@
     </div>
     <div class="analysis-charts-grid">
       <div class="analysis-chart-card">
-        <div class="analysis-chart-title">Boxplot de turbidez</div>
+        <div class="analysis-chart-title">Boxplot de turbiedad</div>
         <div class="analysis-chart-subtitle">
           Variables: Turbidez_Planta, Turb_P3 y Turb_Ing_Tonch.
         </div>
@@ -851,11 +794,11 @@
 
     <div class="subsection-title">Franja de gráficos de torta</div>
     <div class="table-note">
-      Porcentajes calculados desde el conteo de registros de turbidez por rangos cerrados, usando los datos filtrados por Mes y Día.
+      Porcentajes calculados desde el conteo de registros de turbiedad por rangos cerrados, usando los datos filtrados por Mes y Día.
     </div>
     <div class="analysis-charts-grid">
       <div class="analysis-chart-card">
-        <div class="analysis-chart-title">Distribución porcentual de turbidez P1 y P2</div>
+        <div class="analysis-chart-title">Distribución porcentual de turbiedad P1 y P2</div>
         <div class="analysis-chart-subtitle">
           Porcentajes calculados desde el conteo de registros de Turbidez_Planta por rangos cerrados.
         </div>
@@ -863,7 +806,7 @@
       </div>
 
       <div class="analysis-chart-card">
-        <div class="analysis-chart-title">Distribución porcentual de turbidez SP3</div>
+        <div class="analysis-chart-title">Distribución porcentual de turbiedad SP3</div>
         <div class="analysis-chart-subtitle">
           Porcentajes calculados desde el conteo de registros de Turb_P3 por rangos cerrados.
         </div>
@@ -871,23 +814,11 @@
       </div>
 
       <div class="analysis-chart-card">
-        <div class="analysis-chart-title">Distribución porcentual de turbidez Tonchalá</div>
+        <div class="analysis-chart-title">Distribución porcentual de turbiedad Tonchalá</div>
         <div class="analysis-chart-subtitle">
           Porcentajes calculados desde el conteo de registros de Turb_Ing_Tonch por rangos cerrados.
         </div>
         <canvas id="pieTurbiedadTonchalaChart" class="analysis-chart-canvas"></canvas>
-      </div>
-    </div>
-
-    <div class="subsection-title">Kg de coagulante según intervalos de turbidez</div>
-    <div class="table-note">
-      Este gráfico responde únicamente a los filtros de Mes y Día. Cada rango de turbidez muestra tres barras: P1 y P2, SP3 y Tonchalá. Cuando no hay datos, la barra se muestra en 0. Si el día seleccionado no pertenece al mes seleccionado, se muestra un mensaje dentro del gráfico.
-    </div>
-    <div class="coagulante-interval-chart-card">
-      <div class="coagulante-interval-chart-title" id="coagulanteIntervalChartTitle">Kg de coagulante anual según intervalos de turbidez</div>
-      <div class="coagulante-interval-chart-subtitle" id="coagulanteIntervalChartSubtitle">Seleccione Mes y Día para actualizar el gráfico.</div>
-      <div class="coagulante-interval-chart-canvas-wrap">
-        <canvas id="coagulanteIntervalChart" class="coagulante-interval-chart-canvas"></canvas>
       </div>
     </div>
 
@@ -913,6 +844,22 @@
       </div>
     </div>
 
+    <div class="section-title">Resultados por operador</div>
+    <div class="table-note">
+      Este gráfico responde a la métrica activa, la planta activa y al selector de Mes.
+      Si en Mes se elige un mes específico, se muestra por días. Si en Mes se elige Todos, se muestra agrupado por meses del año.
+      Ignora por completo el filtro de Día. Los operadores sin dato se representan en cero y, si existen más de 7 operadores, el resto se agrupa como Otros.
+    </div>
+    <div class="operator-daily-chart-card">
+      <div class="operator-daily-chart-header">
+        <div>
+          <div class="operator-daily-chart-title" id="operatorDailyChartTitle">Resultados diarios</div>
+          <div class="operator-daily-chart-subtitle" id="operatorDailyChartSubtitle">Seleccione un mes.</div>
+        </div>
+      </div>
+      <div class="operator-daily-chart-canvas-wrap">
+        <canvas id="operatorDailyChart" class="operator-daily-chart-canvas"></canvas>
+      </div>
     </div>
   </div>
 
@@ -935,7 +882,6 @@
     let pieTurbiedadTonchalaChartInstance = null;
     let comparisonVolumenChartInstance = null;
     let comparisonCostoChartInstance = null;
-    let coagulanteIntervalChartInstance = null;
     let operatorDailyChartInstance = null;
 
     const AUTO_JSON_FILE = "data.json";
@@ -974,25 +920,10 @@
       "#7c3aed",
       "#ea580c",
       "#0891b2",
-      "#ca8a04",
-      "#be123c",
-      "#0f766e",
-      "#9333ea",
-      "#1d4ed8",
-      "#15803d",
-      "#c2410c",
-      "#0369a1",
-      "#a16207",
-      "#374151",
-      "#4338ca",
-      "#047857",
-      "#e11d48",
-      "#7e22ce"
+      "#ca8a04"
     ];
 
     const OPERATOR_OTHERS_COLOR = "#6b7280";
-    const OPERATOR_COLOR_STORAGE_KEY = "dashboard_operator_color_map_v1";
-    let operatorColorRegistry = loadOperatorColorRegistry();
 
     const PLANT_CONFIG = {
       p1p2: {
@@ -1071,20 +1002,15 @@
     const btnSP3 = document.getElementById("btnSP3");
     const btnTonchala = document.getElementById("btnTonchala");
     const metricTitleEl = document.getElementById("metricTitle");
-    const yearSelectEl = document.getElementById("yearSelect");
     const monthSelectEl = document.getElementById("monthSelect");
     const daySelectEl = document.getElementById("daySelect");
     const intervalSelectEl = document.getElementById("intervalSelect");
     const operatorDailyChartTitleEl = document.getElementById("operatorDailyChartTitle");
     const operatorDailyChartSubtitleEl = document.getElementById("operatorDailyChartSubtitle");
-    const coagulanteIntervalChartTitleEl = document.getElementById("coagulanteIntervalChartTitle");
-    const coagulanteIntervalChartSubtitleEl = document.getElementById("coagulanteIntervalChartSubtitle");
     const objectiveBandEl = document.getElementById("objectiveBand");
     const objectiveValueEl = document.getElementById("objectiveValue");
 
     Chart.register(ChartDataLabels);
-
-    ensureOperatorRegistryUniqueness();
 
     function getPlantConfig() {
       return PLANT_CONFIG[currentPlant];
@@ -1224,169 +1150,17 @@
       };
     }
 
-    function normalizeOperatorName(value) {
-      return String(value || "").trim();
-    }
-
-    function safeLocalStorageGet(key) {
-      try {
-        return window.localStorage.getItem(key);
-      } catch (error) {
-        return null;
-      }
-    }
-
-    function safeLocalStorageSet(key, value) {
-      try {
-        window.localStorage.setItem(key, value);
-      } catch (error) {
-        // Ignorar bloqueos de almacenamiento del navegador.
-      }
-    }
-
-    function loadOperatorColorRegistry() {
-      const stored = safeLocalStorageGet(OPERATOR_COLOR_STORAGE_KEY);
-      if (!stored) return {};
-
-      try {
-        const parsed = JSON.parse(stored);
-        return parsed && typeof parsed === "object" ? parsed : {};
-      } catch (error) {
-        return {};
-      }
-    }
-
-    function saveOperatorColorRegistry() {
-      safeLocalStorageSet(OPERATOR_COLOR_STORAGE_KEY, JSON.stringify(operatorColorRegistry));
-    }
-
-    function hashOperatorName(name) {
-      let hash = 0;
-      for (let i = 0; i < name.length; i += 1) {
-        hash = ((hash << 5) - hash) + name.charCodeAt(i);
-        hash |= 0;
-      }
-      return Math.abs(hash);
-    }
-
-    function hslToHex(h, s, l) {
-      const hue = ((h % 360) + 360) % 360;
-      const sat = Math.max(0, Math.min(100, s)) / 100;
-      const lig = Math.max(0, Math.min(100, l)) / 100;
-
-      const c = (1 - Math.abs(2 * lig - 1)) * sat;
-      const x = c * (1 - Math.abs(((hue / 60) % 2) - 1));
-      const m = lig - c / 2;
-      let r = 0;
-      let g = 0;
-      let b = 0;
-
-      if (hue < 60) {
-        r = c; g = x; b = 0;
-      } else if (hue < 120) {
-        r = x; g = c; b = 0;
-      } else if (hue < 180) {
-        r = 0; g = c; b = x;
-      } else if (hue < 240) {
-        r = 0; g = x; b = c;
-      } else if (hue < 300) {
-        r = x; g = 0; b = c;
-      } else {
-        r = c; g = 0; b = x;
-      }
-
-      const toHex = value => Math.round((value + m) * 255).toString(16).padStart(2, "0");
-      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-    }
-
-    function buildOperatorColor(seedHash, attempt = 0) {
-      const hue = (seedHash + Math.round(attempt * 137.508)) % 360;
-      const saturation = 62 + ((seedHash + attempt * 17) % 14);
-      const lightness = 42 + ((seedHash + attempt * 11) % 10);
-      return hslToHex(hue, saturation, lightness);
-    }
-
-    function generateOperatorColor(name, registry = {}) {
-      const hash = hashOperatorName(name);
-      const usedColors = new Set(
-        Object.entries(registry)
-          .filter(([operator]) => operator !== name)
-          .map(([, color]) => String(color || '').toLowerCase())
-      );
-
-      for (let attempt = 0; attempt < 360; attempt += 1) {
-        const candidate = buildOperatorColor(hash, attempt);
-        if (!usedColors.has(candidate.toLowerCase())) {
-          return candidate;
-        }
-      }
-
-      return buildOperatorColor(hash, 0);
-    }
-
-    function ensureOperatorRegistryUniqueness() {
-      const normalizedRegistry = {};
-      let changed = false;
-      const usedColors = new Set();
-
-      Object.keys(operatorColorRegistry || {})
-        .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }))
-        .forEach(operator => {
-          if (!operator || operator === 'Otros') return;
-
-          const savedColor = String(operatorColorRegistry[operator] || '').toLowerCase();
-          let finalColor = savedColor;
-
-          if (!finalColor || usedColors.has(finalColor)) {
-            finalColor = generateOperatorColor(operator, normalizedRegistry).toLowerCase();
-            if (finalColor !== savedColor) changed = true;
-          }
-
-          normalizedRegistry[operator] = finalColor;
-          usedColors.add(finalColor);
-        });
-
-      operatorColorRegistry = normalizedRegistry;
-      if (changed) saveOperatorColorRegistry();
-    }
-
-    function getStableOperatorColor(operatorName) {
-      const normalized = normalizeOperatorName(operatorName);
-      if (!normalized) return OPERATOR_OTHERS_COLOR;
-      if (normalized === "Otros") return OPERATOR_OTHERS_COLOR;
-
-      if (!operatorColorRegistry[normalized]) {
-        operatorColorRegistry[normalized] = generateOperatorColor(normalized, operatorColorRegistry);
-        saveOperatorColorRegistry();
-      }
-
-      return operatorColorRegistry[normalized];
-    }
-
-    function registerOperatorsFromData(data) {
-      let changed = false;
-
-      data.forEach(row => {
-        const operator = normalizeOperatorName(row && row[FIELD_OPERADOR]);
-        if (!operator || operator === "Otros") return;
-
-        if (!operatorColorRegistry[operator]) {
-          operatorColorRegistry[operator] = generateOperatorColor(operator, operatorColorRegistry);
-          changed = true;
-        }
-      });
-
-      ensureOperatorRegistryUniqueness();
-      if (changed) saveOperatorColorRegistry();
-    }
-
     function getOperatorColorMap(operatorLabels) {
       const colorMap = {};
+      let paletteIndex = 0;
 
       operatorLabels.forEach(label => {
-        colorMap[label] = label === "Otros"
-          ? OPERATOR_OTHERS_COLOR
-          : getStableOperatorColor(label);
+        if (label === "Otros") {
+          colorMap[label] = OPERATOR_OTHERS_COLOR;
+        } else {
+          colorMap[label] = OPERATOR_COLOR_PALETTE[paletteIndex % OPERATOR_COLOR_PALETTE.length];
+          paletteIndex += 1;
+        }
       });
 
       return colorMap;
@@ -1400,26 +1174,22 @@
     }
 
     function getValidRowsForOperatorDailyChart(data, plantConfig) {
-      const selectedYear = getSelectedYearValue();
       const monthIso = monthSelectEl.value;
       if (!monthIso) return [];
 
       return data.filter(row => {
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed || parsed.isoMonth !== monthIso) return false;
-        if (selectedYear && parsed.year !== selectedYear) return false;
         return true;
       });
     }
 
     function getAvailableMonthsFromData(data) {
-      const selectedYear = getSelectedYearValue();
       const monthMap = new Map();
 
       data.forEach(row => {
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return;
-        if (selectedYear && parsed.year !== selectedYear) return;
         if (!monthMap.has(parsed.isoMonth)) {
           monthMap.set(parsed.isoMonth, nombresMes[Number(parsed.month) - 1]);
         }
@@ -1432,30 +1202,13 @@
 
     function buildOperatorChartModel(data, plantConfig, mode) {
       const monthIso = monthSelectEl.value;
-      const selectedDay = daySelectEl.value;
-      const isHourlyView = !!selectedDay;
-      const isMonthlyView = !isHourlyView && !monthIso;
-      const isDailyView = !isHourlyView && !!monthIso;
+      const isMonthlyView = !monthIso;
       const selectedRange = getSelectedRangeConfig();
       const rangeLabel = selectedRange ? selectedRange.label : "Todos";
 
-      const selectedYear = getSelectedYearValue();
-      const sourceRows = data.filter(row => {
-        const parsed = parseDateString(row[FIELD_FECHA]);
-        if (!parsed) return false;
-
-        if (isHourlyView) {
-          return parsed.isoDay === selectedDay;
-        }
-
-        if (isDailyView) {
-          if (selectedYear && parsed.year !== selectedYear) return false;
-          return parsed.isoMonth === monthIso;
-        }
-
-        if (selectedYear && parsed.year !== selectedYear) return false;
-        return true;
-      });
+      const sourceRows = isMonthlyView
+        ? data.filter(row => !!parseDateString(row[FIELD_FECHA]))
+        : getValidRowsForOperatorDailyChart(data, plantConfig);
 
       const operatorAppearance = [];
       const seenOperators = new Set();
@@ -1471,53 +1224,34 @@
       const hasOthersGroup = operatorAppearance.length > 7;
       const operatorLabels = hasOthersGroup ? [...primaryOperators, "Otros"] : [...primaryOperators];
 
-      const selectedDayLabel = selectedDay
-        ? `${selectedDay.slice(8, 10)}/${selectedDay.slice(5, 7)}/${selectedDay.slice(0, 4)}`
-        : "";
-
       if (!operatorLabels.length) {
         return {
           state: "no-data",
-          message: isHourlyView
-            ? "No hay operadores válidos para el día seleccionado."
-            : isDailyView
-              ? "No hay operadores válidos para el mes seleccionado."
-              : "No hay operadores válidos para los datos disponibles.",
+          message: isMonthlyView
+            ? "No hay operadores válidos para los datos disponibles."
+            : "No hay operadores válidos para el mes seleccionado.",
           monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
-          selectedDayLabel,
           rangeLabel,
-          isMonthlyView,
-          isDailyView,
-          isHourlyView
+          isMonthlyView
         };
       }
 
-      const groupDefs = isHourlyView
-        ? Array.from({ length: 24 }, (_, index) => ({
-            key: String(index),
-            label: String(index)
-          }))
-        : isMonthlyView
-          ? getAvailableMonthsFromData(sourceRows).map(item => ({ key: item.isoMonth, label: item.monthLabel }))
-          : Array.from({ length: getLastDayOfMonthFromIso(monthIso) }, (_, index) => ({
-              key: String(index + 1),
-              label: String(index + 1)
-            }));
+      const groupDefs = isMonthlyView
+        ? getAvailableMonthsFromData(sourceRows).map(item => ({ key: item.isoMonth, label: item.monthLabel }))
+        : Array.from({ length: getLastDayOfMonthFromIso(monthIso) }, (_, index) => ({
+            key: String(index + 1),
+            label: String(index + 1)
+          }));
 
       if (!groupDefs.length) {
         return {
           state: "no-data",
-          message: isHourlyView
-            ? "No hay horas válidas para graficar."
-            : isDailyView
-              ? "No hay días válidos para graficar."
-              : "No hay meses válidos para graficar.",
+          message: isMonthlyView
+            ? "No hay meses válidos para graficar."
+            : "No hay días válidos para graficar.",
           monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
-          selectedDayLabel,
           rangeLabel,
-          isMonthlyView,
-          isDailyView,
-          isHourlyView
+          isMonthlyView
         };
       }
 
@@ -1545,7 +1279,7 @@
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return;
 
-        const groupKey = isHourlyView ? String(getHourValue(row)) : (isMonthlyView ? parsed.isoMonth : String(Number(parsed.day)));
+        const groupKey = isMonthlyView ? parsed.isoMonth : String(Number(parsed.day));
         if (!grouped[groupKey]) return;
 
         const rawOperator = String(row[FIELD_OPERADOR] || "").trim();
@@ -1644,12 +1378,9 @@
         datasets,
         operatorLabels,
         monthLabel: monthIso ? getMonthLabelFromIso(monthIso) : "",
-        selectedDayLabel,
         rangeLabel,
         maxValue,
-        isMonthlyView,
-        isDailyView,
-        isHourlyView
+        isMonthlyView
       };
     }
 
@@ -1733,17 +1464,11 @@
       return true;
     }
 
-    function formatDayOptionLabel(isoDay) {
-      const [year, month, day] = isoDay.split("-");
-      return `${day}/${month}/${year}`;
-    }
+    function fillSelectors(data, options = {}) {
+      const {
+        forceFirstAvailableDay = false
+      } = options;
 
-    function getSelectedYearValue() {
-      return yearSelectEl ? yearSelectEl.value : "";
-    }
-
-    function buildDateSelectorState(data, selectedYear = "", selectedMonth = "") {
-      const years = new Map();
       const months = new Map();
       const days = new Set();
 
@@ -1751,91 +1476,51 @@
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return;
 
-        const monthNum = parseInt(parsed.month, 10);
-        const monthLabel = nombresMes[monthNum - 1] + " " + parsed.year;
+        const year = parsed.isoMonth.slice(0, 4);
+        const monthNum = parseInt(parsed.isoMonth.slice(5, 7), 10);
+        const label = nombresMes[monthNum - 1] + " " + year;
 
-        years.set(parsed.year, parsed.year);
-
-        if (!selectedYear || parsed.year === selectedYear) {
-          months.set(parsed.isoMonth, monthLabel);
-        }
-
-        const matchesSelectedYear = !selectedYear || parsed.year === selectedYear;
-        const matchesSelectedMonth = !selectedMonth || parsed.isoMonth === selectedMonth;
-
-        if (matchesSelectedYear && matchesSelectedMonth) {
-          days.add(parsed.isoDay);
-        }
+        months.set(parsed.isoMonth, label);
+        days.add(parsed.isoDay);
       });
 
-      return {
-        years,
-        months,
-        sortedDays: Array.from(days).sort((a, b) => b.localeCompare(a))
-      };
-    }
+      const selectedMonth = monthSelectEl.value;
+      const selectedDay = daySelectEl.value;
 
-    function fillSelectors(data, options = {}) {
-      const {
-        forceFirstAvailableDay = false
-      } = options;
-
-      const selectedYearBefore = getSelectedYearValue();
-      const selectedMonthBefore = monthSelectEl.value;
-      const selectedDayBefore = daySelectEl.value;
-
-      const baseState = buildDateSelectorState(data, selectedYearBefore, "");
-      const validSelectedYear = selectedYearBefore && baseState.years.has(selectedYearBefore)
-        ? selectedYearBefore
-        : "";
-
-      if (yearSelectEl) {
-        yearSelectEl.innerHTML =
-          '<option value="">Todos</option>' +
-          Array.from(baseState.years.keys())
-            .sort((a, b) => b.localeCompare(a))
-            .map(year => `<option value="${year}">${year}</option>`)
-            .join("");
-
-        yearSelectEl.value = validSelectedYear;
-      }
-
-      const monthState = buildDateSelectorState(data, validSelectedYear, "");
-      const validSelectedMonth = selectedMonthBefore && monthState.months.has(selectedMonthBefore)
-        ? selectedMonthBefore
-        : "";
+      const sortedDays = Array.from(days).sort((a, b) => b.localeCompare(a));
+      const firstAvailableDay = sortedDays.length ? sortedDays[0] : "";
 
       monthSelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        Array.from(monthState.months.entries())
+        Array.from(months.entries())
           .sort((a, b) => a[0].localeCompare(b[0]))
           .map(([value, label]) => `<option value="${value}">${label}</option>`)
           .join("");
 
-      monthSelectEl.value = validSelectedMonth;
-
-      const dayState = buildDateSelectorState(data, validSelectedYear, validSelectedMonth);
-      const firstAvailableDay = dayState.sortedDays.length ? dayState.sortedDays[0] : "";
-
       daySelectEl.innerHTML =
         '<option value="">Todos</option>' +
-        dayState.sortedDays
-          .map(day => `<option value="${day}">${formatDayOptionLabel(day)}</option>`)
+        sortedDays
+          .map(day => {
+            const [year, month, d] = day.split("-");
+            const formatted = `${d}/${month}/${year}`;
+            return `<option value="${day}">${formatted}</option>`;
+          })
           .join("");
+
+      if (selectedMonth) {
+        monthSelectEl.value = selectedMonth;
+      }
 
       if (forceFirstAvailableDay) {
         daySelectEl.value = firstAvailableDay;
-      } else if (selectedDayBefore && dayState.sortedDays.includes(selectedDayBefore)) {
-        daySelectEl.value = selectedDayBefore;
-      } else if (selectedDayBefore && firstAvailableDay) {
-        daySelectEl.value = firstAvailableDay;
+      } else if (selectedDay && sortedDays.includes(selectedDay)) {
+        daySelectEl.value = selectedDay;
       } else {
         daySelectEl.value = "";
       }
     }
 
     function applyDateFilter(data) {
-      const selectedYear = getSelectedYearValue();
       const selectedMonth = monthSelectEl.value;
       const selectedDay = daySelectEl.value;
 
@@ -1843,7 +1528,6 @@
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return false;
 
-        if (selectedYear && parsed.year !== selectedYear) return false;
         if (selectedMonth && parsed.isoMonth !== selectedMonth) return false;
         if (selectedDay && parsed.isoDay !== selectedDay) return false;
 
@@ -1852,7 +1536,6 @@
     }
 
     function getMonthFilteredDataOnly(data) {
-      const selectedYear = getSelectedYearValue();
       const selectedMonth = monthSelectEl.value;
 
       if (!selectedMonth) return [];
@@ -1860,7 +1543,6 @@
       return data.filter(row => {
         const parsed = parseDateString(row[FIELD_FECHA]);
         if (!parsed) return false;
-        if (selectedYear && parsed.year !== selectedYear) return false;
         return parsed.isoMonth === selectedMonth;
       });
     }
@@ -1877,21 +1559,6 @@
       if (!isoMonth) return 31;
       const [year, month] = isoMonth.split("-");
       return new Date(Number(year), Number(month), 0).getDate();
-    }
-
-    function getLatestYearFromData(data) {
-      const selectedYear = getSelectedYearValue();
-      if (selectedYear) return selectedYear;
-
-      const years = data
-        .map(row => {
-          const parsed = parseDateString(row[FIELD_FECHA]);
-          return parsed ? Number(parsed.year) : NaN;
-        })
-        .filter(year => !isNaN(year));
-
-      if (!years.length) return "";
-      return String(Math.max(...years));
     }
 
     function getTurbidezPromedioValue(row, plantConfig) {
@@ -2426,45 +2093,15 @@
       const selectedDay = daySelectEl.value;
 
       if (!monthIso && !selectedDay) {
-        const selectedYear = getLatestYearFromData(data);
-        const groupedByMonth = {};
-        for (let m = 1; m <= 12; m++) {
-          groupedByMonth[m] = [];
-        }
-
-        data.forEach(row => {
-          const parsed = parseDateString(row[FIELD_FECHA]);
-          if (!parsed) return;
-          if (selectedYear && parsed.year !== selectedYear) return;
-
-          const monthNum = Number(parsed.month);
-          const turbidez = getTurbidezPromedioValue(row, config);
-
-          if (isNaN(monthNum) || isNaN(turbidez)) return;
-          groupedByMonth[monthNum].push({ value: turbidez });
-        });
-
-        const labels = [];
-        const values = [];
-
-        for (let m = 1; m <= 12; m++) {
-          labels.push(nombresMes[m - 1]);
-          const avg = averageEntriesSimple(groupedByMonth[m]);
-          values.push(avg === "" ? null : Number(avg));
-        }
-
-        const hasData = values.some(v => v !== null && !isNaN(v));
-
         return {
-          mode: "monthly",
-          labels,
-          values,
-          yearLabel: selectedYear,
-          titleSuffix: `Turbidez promedio acumulada del año ${selectedYear || ""}`.trim(),
-          subtitle: `Se muestran los promedios simples mensuales de turbidez para ${selectedYear || "el año disponible en los datos"}.`,
-          xAxisTitle: "Meses del año",
-          yAxisTitle: "Promedio de turbidez (NTU)",
-          hasData
+          mode: "empty",
+          labels: [],
+          values: [],
+          titleSuffix: "Turbiedad promedio diaria",
+          subtitle: "Seleccione un mes o un día para visualizar el gráfico.",
+          xAxisTitle: "",
+          yAxisTitle: "Turbiedad promedio (NTU)",
+          hasData: false
         };
       }
 
@@ -2489,24 +2126,23 @@
         const values = [];
 
         for (let h = 0; h < 24; h++) {
-          labels.push(String(h));
+          labels.push(String(h + 1));
           const avg = averageEntriesSimple(groupedByHour[h]);
           values.push(avg === "" ? null : Number(avg));
         }
 
         const hasData = values.some(v => v !== null && !isNaN(v));
         const [, monthNum, dayNum] = selectedDay.split("-");
-
         const dayLabel = `${dayNum}/${monthNum}/${selectedDay.slice(0, 4)}`;
 
         return {
           mode: "hourly",
           labels,
           values,
-          titleSuffix: "Turbidez promedio horaria",
+          titleSuffix: "Turbiedad promedio horaria",
           subtitle: `Día seleccionado: ${dayLabel}. Se muestran las 24 horas del día.`,
           xAxisTitle: "Horas del día",
-          yAxisTitle: "Promedio de turbidez (NTU)",
+          yAxisTitle: "Turbiedad promedio (NTU)",
           hasData
         };
       }
@@ -2546,10 +2182,10 @@
         labels,
         values,
         monthLabel: getMonthLabelFromIso(monthIso),
-        titleSuffix: "Turbidez promedio diaria",
+        titleSuffix: "Turbiedad promedio diaria",
         subtitle: `Mes seleccionado: ${getMonthLabelFromIso(monthIso)}. Se muestran los días del mes seleccionado.`,
         xAxisTitle: "Días del mes",
-        yAxisTitle: "Promedio de turbidez (NTU)",
+        yAxisTitle: "Turbiedad promedio (NTU)",
         hasData
       };
     }
@@ -2611,13 +2247,6 @@
       }
     }
 
-    function destroyCoagulanteIntervalChart() {
-      if (coagulanteIntervalChartInstance) {
-        coagulanteIntervalChartInstance.destroy();
-        coagulanteIntervalChartInstance = null;
-      }
-    }
-
     function destroyOperatorDailyChart() {
       if (operatorDailyChartInstance) {
         operatorDailyChartInstance.destroy();
@@ -2673,202 +2302,6 @@
         const value = toNumber(row[fieldName]);
         return isNaN(value) ? acc : acc + value;
       }, 0);
-    }
-
-    function isMonthDaySelectionValid() {
-      const selectedMonth = monthSelectEl.value;
-      const selectedDay = daySelectEl.value;
-
-      if (!selectedMonth || !selectedDay) return true;
-      return selectedDay.slice(0, 7) === selectedMonth;
-    }
-
-    function getCoagulanteChartContext() {
-      const selectedMonth = monthSelectEl.value;
-      const selectedDay = daySelectEl.value;
-
-      if (selectedMonth && selectedDay && selectedDay.slice(0, 7) !== selectedMonth) {
-        return {
-          valid: false,
-          title: "Kg de coagulante según intervalos de turbidez",
-          subtitle: "El día seleccionado no pertenece al mes seleccionado.",
-          message: "El día seleccionado no pertenece al mes seleccionado"
-        };
-      }
-
-      if (!selectedMonth && !selectedDay) {
-        return {
-          valid: true,
-          title: "Kg de coagulante anual según intervalos de turbidez",
-          subtitle: "Suma anual de Kg de Coagulante por rango de turbidez para P1 y P2, SP3 y Tonchalá."
-        };
-      }
-
-      if (!selectedMonth && selectedDay) {
-        const [year, month, day] = selectedDay.split('-');
-        return {
-          valid: true,
-          title: `Kg de coagulante del día ${day}/${month}/${year} según intervalos de turbidez`,
-          subtitle: "Suma de Kg de Coagulante de la fecha exacta seleccionada por rango de turbidez para las diferentes plantas."
-        };
-      }
-
-      if (selectedMonth && !selectedDay) {
-        return {
-          valid: true,
-          title: `Kg de coagulante del mes de ${getMonthLabelFromIso(selectedMonth)} según intervalos de turbidez`,
-          subtitle: "Suma mensual de Kg de Coagulante por rango de turbidez para P1 y P2, SP3 y Tonchalá."
-        };
-      }
-
-      const [year, month, day] = selectedDay.split('-');
-      return {
-        valid: true,
-        title: `Kg de coagulante del día ${day}/${month}/${year} según intervalos de turbidez`,
-        subtitle: "Suma de Kg de Coagulante del día seleccionado por rango de turbidez para las diferentes plantas."
-      };
-    }
-
-    function getKgCoagulanteByPlantAndRange(data, plantKey) {
-      const turbidityFieldMap = {
-        p1p2: 'Turbidez_Planta',
-        sp3: 'Turb_P3',
-        tonchala: 'Turb_Ing_Tonch'
-      };
-
-      const kgFieldMap = {
-        p1p2: 'Kg_Coag_P1P2',
-        sp3: 'Kg_Coag_P3',
-        tonchala: 'Kg_Coag_Tonchalá'
-      };
-
-      const turbidityField = turbidityFieldMap[plantKey];
-      const kgField = kgFieldMap[plantKey];
-
-      return ranges.map(range => {
-        return data.reduce((acc, row) => {
-          const turbidez = toNumber(row[turbidityField]);
-          const kg = toNumber(row[kgField]);
-          if (isNaN(turbidez) || isNaN(kg)) return acc;
-          if (!range.test(turbidez)) return acc;
-          return acc + kg;
-        }, 0);
-      });
-    }
-
-    function renderCoagulanteIntervalChart() {
-      const canvasId = 'coagulanteIntervalChart';
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-
-      const contextInfo = getCoagulanteChartContext();
-      if (coagulanteIntervalChartTitleEl) coagulanteIntervalChartTitleEl.textContent = contextInfo.title;
-      if (coagulanteIntervalChartSubtitleEl) coagulanteIntervalChartSubtitleEl.textContent = contextInfo.subtitle;
-
-      if (coagulanteIntervalChartInstance) {
-        coagulanteIntervalChartInstance.destroy();
-        coagulanteIntervalChartInstance = null;
-      }
-
-      if (!contextInfo.valid) {
-        clearCanvas(canvasId);
-        drawEmptyMessageOnCanvas(canvasId, contextInfo.message);
-        return;
-      }
-
-      const filteredData = applyDateFilter(rawData);
-      const datasets = CHART_PLANTS.map(plant => ({
-        label: plant.label,
-        data: getKgCoagulanteByPlantAndRange(filteredData, plant.key),
-        backgroundColor: plant.color,
-        borderColor: plant.color,
-        borderWidth: 1
-      }));
-
-      const hasAnyData = datasets.some(dataset => dataset.data.some(value => value > 0));
-      if (!hasAnyData) {
-        clearCanvas(canvasId);
-        drawEmptyMessageOnCanvas(canvasId, 'No hay datos válidos con los filtros seleccionados');
-        return;
-      }
-
-      coagulanteIntervalChartInstance = new Chart(canvas, {
-        type: 'bar',
-        data: {
-          labels: ranges.map(r => r.label),
-          datasets
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                color: '#0f172a',
-                font: { size: 12 }
-              }
-            },
-            datalabels: {
-              display: false
-            },
-            tooltip: {
-              callbacks: {
-                title(items) {
-                  if (!items.length) return '';
-                  return `Rango: ${items[0].label}`;
-                },
-                label(context) {
-                  const value = context.raw || 0;
-                  return `${context.dataset.label}: ${formatNumberEs(value, 2)} Kg`;
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'Rangos de turbidez',
-                color: '#0f172a',
-                font: {
-                  weight: 'bold',
-                  size: 13
-                }
-              },
-              ticks: {
-                color: '#334155',
-                maxRotation: 30,
-                minRotation: 30
-              },
-              grid: {
-                color: '#e2e8f0'
-              }
-            },
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Kg de Coagulante',
-                color: '#0f172a',
-                font: {
-                  weight: 'bold',
-                  size: 13
-                }
-              },
-              ticks: {
-                color: '#334155',
-                callback(value) {
-                  return formatNumberEs(value, 0);
-                }
-              },
-              grid: {
-                color: '#cbd5e1'
-              }
-            }
-          }
-        }
-      });
     }
 
     function buildPorticoTonchalaComposition(data, fieldMap) {
@@ -3128,45 +2561,32 @@
       const canvas = document.getElementById(canvasId);
       const model = buildOperatorChartModel(rawData, getPlantConfig(), currentMode);
       const formatter = getChartMetricFormatter(currentMode);
+      const selectedRange = getSelectedRangeConfig();
       const isMonthlyView = !!model.isMonthlyView;
-      const isDailyView = !!model.isDailyView;
-      const isHourlyView = !!model.isHourlyView;
 
       destroyOperatorDailyChart();
 
-      operatorDailyChartTitleEl.textContent = isHourlyView
-        ? "Resultados horarios"
-        : isMonthlyView
-          ? "Resultados mensuales"
-          : `Resultados diarios - ${model.monthLabel}`;
+      operatorDailyChartTitleEl.textContent = isMonthlyView
+        ? "Resultados mensuales"
+        : `Resultados diarios - ${model.monthLabel}`;
 
       if (model.state === "no-data") {
-        operatorDailyChartSubtitleEl.textContent = isHourlyView
-          ? `Resultados horarios - ${model.selectedDayLabel}`
-          : isMonthlyView
-            ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Mes = Todos y Día = Todos, el gráfico agrupa por meses del año.`
-            : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Día = Todos, el gráfico agrupa por días del mes seleccionado.`;
+        operatorDailyChartSubtitleEl.textContent = `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. ${isMonthlyView ? 'El gráfico ignora el filtro de Día y agrupa por meses del año.' : 'El gráfico ignora el filtro de Día y agrupa por días del mes seleccionado.'}`;
         clearCanvas(canvasId);
         drawEmptyMessageOnCanvas(canvasId, model.message || "No hay datos válidos para mostrar");
         return;
       }
 
       if (model.state === "not-applicable") {
-        operatorDailyChartSubtitleEl.textContent = isHourlyView
-          ? `Resultados horarios - ${model.selectedDayLabel}`
-          : isMonthlyView
-            ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Mes = Todos y Día = Todos, el gráfico agrupa por meses del año.`
-            : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Día = Todos, el gráfico agrupa por días del mes seleccionado.`;
+        operatorDailyChartSubtitleEl.textContent = `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. ${isMonthlyView ? 'El gráfico ignora el filtro de Día y agrupa por meses del año.' : 'El gráfico ignora el filtro de Día y agrupa por días del mes seleccionado.'}`;
         clearCanvas(canvasId);
         drawEmptyMessageOnCanvas(canvasId, "No aplica para la planta activa por falta de columnas o datos");
         return;
       }
 
-      operatorDailyChartSubtitleEl.textContent = isHourlyView
-        ? `Resultados horarios - ${model.selectedDayLabel}`
-        : isMonthlyView
-          ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Mes = Todos y Día = Todos, el gráfico agrupa por meses del año. Los operadores sin dato aparecen en cero.`
-          : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${model.rangeLabel}. Cuando Día = Todos, el gráfico agrupa por días del mes seleccionado. Los operadores sin dato aparecen en cero.`;
+      operatorDailyChartSubtitleEl.textContent = isMonthlyView
+        ? `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${selectedRange ? selectedRange.label : 'Todos'}. El gráfico ignora el filtro de Día y, cuando Mes = Todos, agrupa por meses del año. Los operadores sin dato aparecen en cero.`
+        : `Planta activa: ${getCurrentPlantLabel()}. Métrica activa: ${getChartMetricAxisLabel(currentMode)}. Intervalo: ${selectedRange ? selectedRange.label : 'Todos'}. El gráfico ignora el filtro de Día y los operadores sin dato aparecen en cero.`;
 
       const yMax = currentMode === "porcentaje"
         ? 100
@@ -3206,7 +2626,7 @@
               callbacks: {
                 title(items) {
                   if (!items.length) return "";
-                  return isHourlyView ? `Hora ${items[0].label}` : isMonthlyView ? `Mes ${items[0].label}` : `Día ${items[0].label}`;
+                  return isMonthlyView ? `Mes ${items[0].label}` : `Día ${items[0].label}`;
                 },
                 label(context) {
                   const operatorName = context.dataset.operatorNames[context.dataIndex] || "Sin operador";
@@ -3235,7 +2655,7 @@
             x: {
               title: {
                 display: true,
-                text: isHourlyView ? "Horas del día" : isMonthlyView ? "Meses del año" : "Días del mes",
+                text: isMonthlyView ? "Meses del año" : "Días del mes",
                 color: "#0f172a",
                 font: {
                   weight: "bold",
@@ -3245,8 +2665,8 @@
               stacked: false,
               ticks: {
                 color: "#334155",
-                autoSkip: !isHourlyView,
-                maxTicksLimit: isHourlyView ? 24 : isMonthlyView ? 12 : 16
+                autoSkip: true,
+                maxTicksLimit: isMonthlyView ? 12 : 16
               },
               grid: {
                 color: "#e2e8f0"
@@ -3521,7 +2941,7 @@
           { label: "SP3", values: turbiedadSP3Values, color: PLANT_COLORS.sp3 },
           { label: "Tonchalá", values: turbiedadTonchalaValues, color: PLANT_COLORS.tonchala }
         ],
-        "Turbidez (NTU)"
+        "Turbiedad (NTU)"
       );
 
       boxplotM3ChartInstance = renderBoxplotChart(
@@ -3592,7 +3012,7 @@
 
       if (chartData.mode === "empty") {
         clearCanvas(canvasId);
-        drawEmptyMessageOnCanvas(canvasId, "No hay datos válidos para mostrar");
+        drawEmptyMessageOnCanvas(canvasId, "Seleccione un mes o un día");
         return;
       }
 
@@ -3602,9 +3022,7 @@
           canvasId,
           chartData.mode === "hourly"
             ? "No hay datos válidos para el día seleccionado"
-            : chartData.mode === "monthly"
-              ? "No hay datos válidos para el año seleccionado"
-              : "No hay datos válidos para el mes seleccionado"
+            : "No hay datos válidos para el mes seleccionado"
         );
         return;
       }
@@ -3662,9 +3080,6 @@
                   if (chartData.mode === "hourly") {
                     return `Hora ${items[0].label}`;
                   }
-                  if (chartData.mode === "monthly") {
-                    return `Mes ${items[0].label}`;
-                  }
                   return `Día ${items[0].label}`;
                 },
                 label(context) {
@@ -3694,7 +3109,7 @@
               ticks: {
                 color: "#334155",
                 autoSkip: true,
-                maxTicksLimit: chartData.mode === "hourly" ? 24 : chartData.mode === "monthly" ? 12 : 16
+                maxTicksLimit: chartData.mode === "hourly" ? 24 : 16
               },
               grid: {
                 color: "#e2e8f0"
@@ -3990,17 +3405,15 @@
       const fieldName = getObjectiveFieldName();
       if (!fieldName || !rawData.length) return "";
 
-      const selectedYear = getSelectedYearValue();
       const monthIso = monthSelectEl ? monthSelectEl.value : "";
-      const sourceData = rawData.filter(row => {
-        const parsed = parseDateString(row[FIELD_FECHA]);
-        if (!parsed) return false;
-        if (selectedYear && parsed.year !== selectedYear) return false;
-        if (monthIso && parsed.isoMonth !== monthIso) return false;
-        return true;
-      });
+      const sourceData = monthIso
+        ? rawData.filter(row => {
+            const parsed = parseDateString(row[FIELD_FECHA]);
+            return parsed && parsed.isoMonth === monthIso;
+          })
+        : rawData;
 
-      for (const row of sourceData.length ? sourceData : rawData) {
+      for (const row of sourceData) {
         const value = toNumber(row[fieldName]);
         if (!isNaN(value)) return value;
       }
@@ -4067,7 +3480,6 @@
       destroyDailyCharts();
       destroyAnalysisCharts();
       destroyComparisonCharts();
-      destroyCoagulanteIntervalChart();
       destroyOperatorDailyChart();
       clearCanvas("resumenChart");
       clearCanvas("dailyChartP1P2");
@@ -4078,7 +3490,6 @@
       clearCanvas("pieTurbiedadP1P2Chart");
       clearCanvas("pieTurbiedadSP3Chart");
       clearCanvas("pieTurbiedadTonchalaChart");
-      clearCanvas("coagulanteIntervalChart");
       clearCanvas("comparisonVolumenChart");
       clearCanvas("comparisonCostoChart");
       clearCanvas("operatorDailyChart");
@@ -4088,7 +3499,6 @@
 
     function procesarDatos(data) {
       rawData = data;
-      registerOperatorsFromData(rawData);
 
       const plantConfig = getPlantConfig();
       const mode = currentMode;
@@ -4108,7 +3518,6 @@
       renderResumenChart(filteredData);
       renderDailyTurbidityCharts();
       renderAnalysisCharts();
-      renderCoagulanteIntervalChart();
       renderComparisonCharts(filteredData);
       renderOperatorDailyChart();
       renderObjectiveBand();
@@ -4276,20 +3685,8 @@
       if (rawData.length > 0) procesarDatos(rawData);
     });
 
-    if (yearSelectEl) {
-      yearSelectEl.addEventListener("change", () => {
-        if (rawData.length > 0) {
-          fillSelectors(rawData);
-          procesarDatos(rawData);
-        }
-      });
-    }
-
     monthSelectEl.addEventListener("change", () => {
-      if (rawData.length > 0) {
-        fillSelectors(rawData);
-        procesarDatos(rawData);
-      }
+      if (rawData.length > 0) procesarDatos(rawData);
     });
 
     daySelectEl.addEventListener("change", () => {
